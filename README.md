@@ -1,6 +1,10 @@
-# How signal useful and why to use
+# Signals
 
----
+1. https://blog.angular-university.io/angular-signal-components/
+2. https://blog.angular-university.io/angular-signals/
+3. https://blog.angular-university.io/angular-viewchild-contentchild/
+
+# How signal useful and why to use
 
 1. Previously using Zone.js was used to compare the values with the old values before and after an event to know if there is any change and this has to be done for each component in the tree and if it has changed it was marked as dirty and we will re-rendered in the next change detection cycle
 
@@ -249,7 +253,7 @@ Anss => Absolutely! You can create signals anywhere you want. No constraint says
       - input.required<Book>();
       - no longer provide an initial value to the input signal.
       - no longer omit the book property in the parent component
-4.  No more need for the OnChanges lifecycle hook
+4.  **No more need for the OnChanges lifecycle hook**
     - Previously OnChanges hook was required to get notified when a component input changes.
     - We can use the effect() API to get notified whenever an input signal changes
 
@@ -295,3 +299,253 @@ But sometimes, we might want the input property to have a different name
 
             },
         });
+
+## @output() => output() signal
+
+1.  The output() API is a direct replacement for the traditional @Output() decorator.
+2.  The output function returns an OutputEmitterRef
+3.                                                        deleteBook = output<Book>()
+4.  The `<Book>` generic type in output`<Book>()` indicates that this output will only emit values of type Book
+5.                                                 // Child component
+
+        deleteBook = output<Book>();
+
+        onDelete() {
+            this.deleteBook.emit({
+            title: "Angular Deep Dive",
+            synopsis: "A deep dive into Angular core concepts",
+            });
+        }
+
+
+        // parent component
+        <book (deleteBook)="deleteBookEvent($event)" />
+
+6.  Just like in the case of signal inputs, we can also define an alias for an output() like so:
+
+        deleteBook = output<Book>({
+            alias: "deleteBookOutput",
+            });
+
+        //The parent component will then use deleteBookOutput to listen to the output event:
+
+        <book (deleteBookOutput)="deleteBookEvent($event)" />
+
+### output() RxJs Interoperability using outputFromObservable()
+
+1.  we can very easily create an output signal that emits values from an observable.
+2.  We can do this by calling the outputFromObservable function:
+
+        deleteBook = outputFromObservable<Book>(
+            of({
+                title: "Angular Core Deep Dive",
+                synopsis: "A deep dive into the core features of Angular.",
+            })
+        );
+
+### output() RxJs interoperability with outputToObservable()
+
+1.  We can go the other way around and convert an output into an observable.
+2.  We do this by calling the outputToObservable function and passing a component output to it:
+
+        deleteBook = output<Book>();
+
+        deleteBookObservable$ = outputToObservable(this.deleteBook);
+
+        constructor() {
+                this.deleteBookObservable$.subscribe((book: Book) => {
+                console.log("Book emitted: ", book);
+            });
+        }
+
+## model() API
+
+1.  A Model input is essentially a **writeable input!**
+2.  _Model inputs allow us to specify a two-way data binding contract between the parent component and the child component._
+3.  With model(), not only the parent component can pass data through it to child components, but child components can also emit data back to the parent component.
+4.  for 2 way binding using model() from parent `[()] banana-in-the-box concept`
+5.  You can think of it as a writeable input/output signal.
+6.  use case
+
+    - For example, imagine a date picker component with a main input value.
+
+            // Parent component
+            <book [(book)]="book" />
+            <button (click)="changeSynopis()">
+            Change Synopsis
+            </button>
+
+            //.ts
+            book = signal<Book>({
+                title: "Angular Core Deep Dive",
+                synopsis: "Deep dive to advanced features of Angular",
+            });
+
+            changeSynopis() {
+                this.book.update((book) => {
+                book.synopsis += "Updated synopis!!";
+                return book;
+                });
+            }
+
+
+            //CHILD
+            <button (click)="changeTitle()">
+                Change title
+            </button>
+
+            book = model<Book>();
+
+            changeTitle() {
+                this.book.update((book) => {
+                if (!book) return;
+                book.title = "New title";
+                return book;
+                });
+            }
+
+### Responding to model() changes
+
+1.  we can also `define an event handler that will be triggered whenever a model input emits a new value`.
+
+        // Parent
+        <book [book]="book" (bookChange)="bookChangeEvent($event)"/>
+
+        // child
+        book = model<Book>();
+
+2.  `It's just the name of the model input book, followed by the suffix Change.`
+3.  Anywhere where you can apply the `[()]` syntax, you can also subscribe to the corresponding Change event.
+4.  `model() Required`
+
+        book = model.required<Book>();
+
+### Alias for model()
+
+        // child
+        book = model<Book>(
+            {
+                title: "The Avengers",
+                synopsis: "Loki is back to take over the world!",
+            },
+            {
+                alias: "bookInput",
+            }
+        );
+
+        //Parent
+        <book [(bookInput)]="book" />
+
+## viewChild() signal <=> @viewChild decorator
+
+1. viewChild is a `signal-based query used to retrieve elements from the component's template`
+2. These elements can be `either instances of other Angular components or just plain HTML elements`
+3. viewChild signal query does the same thing as the @ViewChild decorator
+
+### Querying plain HTML elements with viewChild()
+
+1.  To query an element from the template, we need to assign it a template reference, using `the # syntax.`
+
+        <div>
+            <b #title>Title</b>
+        </div>
+
+
+        title = viewChild<ElementRef>("title");
+        constructor() {
+            effect(() => {
+                console.log("Title: ",
+                this.title()?.nativeElement);
+            });
+        }
+
+2.  The viewChild signal query `returns a signal whose emitted value is the queried element itself, although wrapped in an ElementRef.`
+3.  if we want `access to the result of the query`, all we have to do is to `subscribe to the title query signal` using any of the signal-based APIs like `effect() or computed()`
+
+### What is the value returned by this signal?
+
+1. to access the actual native HTML element, we still have to access the nativeElement property of the signal value using any of the signal-based APIs like `effect() or computed()`
+2. This is because `ElementRef is a wrapper to the actual DOM element, and not the element itself`.
+
+### Why did we use a generic parameter ElementRef?
+
+1. we used generic parameter ``<ElementRef>` on viewChild, to indicate the type of values emitted by the query signal.
+2. If we haven't done so, the signal would be considered to emit values ot type unknown, which is not what we want.
+
+### What about AfterViewInit?
+
+1. we didn't have to use the typical AfterViewInit lifecycle hook like we used to do when using the @ViewChild decorator.
+2. we `just used a plain signal effect() or computed()` to get notified when the title element is ready which AfterViewInit used to do.
+
+### What happens if the value of a template variable occurs more than once?
+
+Ans => `viewChild will pick the first occurrence of the title variable`, and no error will be thrown
+
+        <div>
+            <b #title>First Title</b>
+            <b #title>Second Title</b>
+        </div>
+
+        <p #title>Paragraph Title</b>
+
+### viewChild() and Component Queries
+
+1.  Besides plain HTML elements, we can `also query component instances` using the viewChild feature.
+2.  We can query components either by using template references like before, or by using the component class itself.
+
+        <div>
+            <book #book></book>
+        </div>
+
+        bookComponent = viewChild<BookComponent>("book");
+
+        this.bookComponent().title;
+        this.bookComponent().hello();
+
+### How does viewChild() work if the template changes?
+
+1. The viewChild signal query `initially performs the query when the view is initialized`.
+2. If at any point the `queried element is destroyed, re-rendered, or updated from the component tree, then the signal query will perform the query again to update itself to the current state of the element`.
+3. If the `element is destroyed then the value of the signal query will be undefined`.
+4. But when created again, the signal query will get the element from the template view again.
+5. So as you can see, the `signal query refreshes itself at every change detection run`.
+
+### Setting "read" on viewChild()
+
+1.  By default, the viewChild() query will emit as value:
+
+    - an `ElementRef` instance if the queried element is a plain HTML element
+    - a `component instance` if the queried element is a component
+
+2.  `"read"` configuration tells viewChild() to emit as value the ElementRef/component/directive etc of the queried element, and not the component that is linked to it.
+
+3.  Use cases to have different behavior
+
+    - even if the queried element is a component, we might still want to access its HTML element for some reason.
+    - in the below example we queried component but trying to get HTML el
+
+            <div>
+                <book #book></book>
+            </div>
+
+            bookComponent = viewChild<ElementRef>("book");
+
+    - the queried element might have several directives applied to it, and we might want to query them separately.
+
+            <book #book
+                matTooltip="I'm a tooltip!">
+            </book>
+
+            bookComponent = viewChild("book", {
+                read: MatTooltip
+            });
+
+### Making viewChild() to be required
+
+- `By default, viewChild() will return undefined` if the queried element is `not found in the template view`.
+- we can make viewChild() make queries that should always match something in the template `using required()` view if `something is also not matched, will throw error`
+
+        <div>
+            <b #title>Title</b>
+        </div>
+        titleRef = viewChild.required("bold");
