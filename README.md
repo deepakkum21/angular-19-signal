@@ -263,11 +263,11 @@ we want the name of our input property to be the same as the name of the input s
 But sometimes, we might want the input property to have a different name
 
         book = input<Book>(null, {
-        alias: "bookInput",
+            alias: "bookInput",
         });
 
         book = input.required<Book>({
-        alias: "bookInput",
+            alias: "bookInput",
         });
 
         <book [bookInput]="angularBook" />
@@ -304,9 +304,9 @@ But sometimes, we might want the input property to have a different name
 
 1.  The output() API is a direct replacement for the traditional @Output() decorator.
 2.  The output function returns an OutputEmitterRef
-3.                                                        deleteBook = output<Book>()
+3.         deleteBook = output<Book>()
 4.  The `<Book>` generic type in output`<Book>()` indicates that this output will only emit values of type Book
-5.                                                 // Child component
+5.                                                    // Child component
 
         deleteBook = output<Book>();
 
