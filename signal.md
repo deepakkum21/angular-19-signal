@@ -1,297 +1,140 @@
-# How signal useful and why to use
+## Modern Angular With Signals Course
 
----
+This repository contains the code of the [Modern Angular With Signals Course](https://angular-university.io/course/angular-signals-course).
 
-1. Previously using Zone.js was used to compare the values with the old values before and after an event to know if there is any change and this has to be done for each component in the tree and if it has changed it was marked as dirty and we will re-rendered in the next change detection cycle
+This course repository is updated to Angular 19:
 
-2. Using signal now Angular can simply keeping track of signal (subscribing - notified when changed), to know when the data has been modified and can mark those component in the component tree as dirty
+![Modern Angular With Signals](https://d3vigmphadbn9b.cloudfront.net/course-images/large-images/angular-signals-course.jpg)
 
-3. can avoid expression has changed after it was checked error
+# Installation pre-requisites
 
-4. Reactive way
+IMPORTANT: Please use Node 18 (Long Term Support version).
 
-### QQQQ => Why would we want to switch to a signal-based approach for handling our data?
+# Installing the Angular CLI
 
-1. The advantage is that with signals, we can easily detect when any part of the application data changes, and update any dependencies automatically.
+Start by doing a global installation of the Angular CLI:
 
-2. Now imagine that the Angular change detection is plugged into the signals of your application, and that Angular knows in which components and expressions every signal is being used.
+    npm install -g @angular/cli
 
-3. This would enable Angular to know exactly what data has changed in the application, and what components and expressions need to be updated in response to a new signal value.
+# How To install this repository
 
-4. There would no longer be the need to check the whole component tree, like in the case of default change detection!
+you can install the main branch using the following commands:
 
-5. If we give Angular the guarantee that all the application data goes inside a signal, Angular all of a sudden has all the necessary information needed for doing the most optimal change detection and re-rendering possible.
+    git clone https://github.com/angular-university/angular-signals-course.git
 
-6. Angular would know how to update the page with the latest data in the most optimal way possible.
-7. And that is the main performance benefit of using signals!
-8. Just by wrapping our data in a signal, we enable Angular to give us the most optimal performance possible in terms of DOM updates.
+    cd angular-signals-course
 
-## Signals
+    npm install
 
-1. By Default signals are writable
-   `age = Signal(10)`
-2. Signal must be initailized
-3. to access value just call the signal variable as a function i.e invoke
-   age() // to read value
-4. To set /update
-   - `signalVar.set(newVal)` // prmitive
-   - `signalVar.update( oldVal => newValue)`
-   - always use update/set API for nonprimitive/ object/ array
-5. Signals are only used for change dectection by angular if they are modified/new value and not when mutated
-6. Readonly Signals
-   - `signal(0).asReadonly`
-   - `computed()`
+# What branches does this repository have?
 
-## Computed Signal
+This repository has 2 branches:
 
-1.  these are readonly signal
-2.  These are derived signal from other signal.
-3.  When a signal updates, all its dependent/derived signals will then get updated automatically
-4.  should always return values
-5.  To have computed signal just need to invoke atleast one signal in the body to initialize the computed signal as a signal always needs a initial value
+- the main branch contains the final code that you will have created at the end of the course
+- the 1-start branch contains the starting point for the course
 
-        counter = signal(0);
+If you don't use Git, it's also possible to download each branch as a ZIP file.
 
-        derivedCounter = computed(() => {
-        return this.counter() \* 10;
-        });
+To do so, you must first select the correct branch from the branch dropdown here on top of this screen on Github.
 
-        tenXCounter = computed(() => {
-        return this.derivedCounter() \* 10;
-        })
+Once inside the right branch, click the green "Code" button and select "Download ZIP".
 
-### QQQQ => Can we read the value of a signal from a computed signal without creating a dependency i.e. when the source signal gets updated it should not trigger computed signal to be invoked?
+# Running the local backend server
 
-Ansss=> _yes using untracked_
+In order to be able to provide more realistic examples, we will need in our playground a small REST API backend server.
 
-        counter = signal(0);
+We can start the sample application backend with the following command:
 
-        derivedCounter = computed(() => {
-        return _*untracked*_(this.counter) \* 10;
-        });
+    npm run server
 
-### QQQQ => What is the major pitfall to look out for when creating computed signals?
+# To run the Frontend Server
 
-1.  If a derived signal depends on a source signal, we need to make sure we call the source signal every time that the compute function gets called.Otherwise, the dependency between the two signals will be broken
-2.  Angular will only create the dependency if source Signal is getting called everytime when computed signal is called.
+To run the frontend part of our code, we will use the Angular CLI:
 
-        // wrong way
-        counter = signal(0);
-        multiplier: number = 0;
+    npm start
 
-        derivedCounter = computed(() => {
-        if (this.multiplier < 10) {
-            return 0;
-        } else {
-            return this.counter() \* this.multiplier;
-            // dependency is never created as source signal is not getting invoked
-            }
-        });
+You can also start the frontend application using the following command:
 
-        // correct way
-        counter = signal(0);
-        multiplier: number = 0;
+    ng serve
 
-        derivedCounter = computed(() => {
-            if (this.counter() === 0) {
-                return 0;
-            } else {
-                return this.counter() \* this.multiplier;
-            }
-        });
-
-### QQQQ => Are signal dependencies determined based only on the initial call to the computed function?
-
-1. No, instead the dependencies of a derived signal are identified dynamically based on its last calculated value.
-2. So with every new call of the computed function, the source signals of the computed signal are identified again.
-3. This means that a signal's dependencies are dynamic, they are not fixed for the lifetime of the signal.
-
-### QQQQ => Overriding the signal equality check
-
-1.  Yes, default equality is ===
-2.  This equality check is important because a signal will only emit a new value if the new value that we are trying to emit is different then the previous value, for performance optimization.
-
-3.  The default behavior however is based on "===" referential equality, which does not allow us to identify arrays or objects that are functionally identical. as SET/UPDATE API gives new object.
-
-4.  for that we need to verride equality
-
-        object = signal(
-            {
-                id: 1,
-                title: "Angular For Beginners",
-            },
-            {
-                equal: (a, b) => {
-                return a.id === b.id && a.title == b.title;
-            },
-        });
-
-## Detecting signal changes with the effect() API
-
-1.  computed() API, gives us way to know when a dependent Signal has changed, and resulting in calculating new value for dervived Signal.
-2.  But what if instead of calculating the new value of a dependent signal, we just want to detect that a value has changed for some other reason?
-3.  a situation where you need to detect that the value of a signal (or a set of signals) has changed to perform some sort of side effect, that does not modify other signals
-4.  in effect() there should be invoking of Signal (not in condition/setTimeout), because of this effect() runs atleast once.
-5.  Best place to define effect is in constractor,
-    why?
-    - To know the dependecy Injection Context, so that while discarding the component on ngDestroy the effect also gets destro to avoid memory leak
-6.  Defining DI context manually (for GC) when effect() defined other than constructor
-
-    - Inject the Injector context using inject(Injector) same as constructor(injector: Injector)
-
-             counter = signal(0,);
-             injector = inject(Injector);
-             increment() {
-                 effect(() => {
-                     this.counter();
-                 }, {
-                     injector: this.injector
-                 })
-             }
-
-7.  Just like in the case of the computed() API, the signal dependencies of an effect are determined dynamically based on the last call to the effect function.
-    - if no signal invocation is done in any of the effect() call, the the signal depency gets broken.
-8.  UseCase
-    - logging the value of a number of signals using a logging library
-    - exporting the value of a signal to localStorage or a cookie [saving form data]
-    - saving the value of a signal transparently to the database in the background
-
-## How to clean up effects manually
-
-1.  By deafault when effect defined inside contructor it know its DI context or when passed injector context using injector, as options to the effect, so the component gets destroyed the effect will get cleanedup.
-2.  an effect() can be manually destroyed by calling destroy() on the EffectRef instance that it returns when first created.
-3.  In these cases, you probably also want to disable the default cleanup behavior by using the manualCleanup option:
-
-        counter = signal(0);
-        injector = inject(Injector);
-        effectRef: EffectRef | null = null;
-        increment() {
-            this.effectRef = effect(() => {
-                this.counter();
-            }, {
-                injector: this.injector,
-                manualCleanup: true //disable default cleanup behaviour
-            })
-        }
-
-        cleanUp() {
-            this.effectRef?.destroy();
-        }
-
-## Performing cleanup operations when an effect is destroyed
-
-1.  Sometimes just removing the effect function from memory is not enough for a proper cleanup.
-2.  On some occasions, we might want to perform some sort of cleanup operation like closing a network connection or otherwise releasing some resources when an effect gets destroyed.
-3.  cleanup() will be called everytime the effect() finsihed its job and also it will be called when the effect() is cleanedup as part of GC or manually.
-4.  usecase:-
-
-    - unsubscribing from an observable
-    - closing a network or database connection
-    - clearing setTimeout or setInterval
-
-             counter = signal(0);
-             constructor(injector: Injector) {
-                 effect((onCleanup) => {
-                     this.counter();
-                     onCleanup(() => {
-                         // cleanup activity
-                         // will be called everytime effect() is called
-                         // in last and also will destroy
-                     })
-                     }
-                 );
-             }
+The application is visible in port 4200: [http://localhost:4200](http://localhost:4200)
 
-## Signals and OnPush components
+# Other Courses
 
-1. OnPush components are components that are only updated when their
-   - input properties change, or
-   - when Observables subscribed with the async pipe emit new value
-2. They are not updated when their input properties are mutated.
-3. When signals are used on a component, Angular marks that component as a dependency of the signal. When the signal changes, the component is re-rendered.
+# Angular Core Deep Dive Course
 
-### QQQQ => Can I create signals outside of components/stores/services?
+If you are looking for the [Angular Core Deep Dive Course](https://angular-university.io/course/angular-course), you can find it here:
 
-Anss => Absolutely! You can create signals anywhere you want. No constraint says that a signal needs to be inside a component, store, or service.
+![Angular Core Deep Dive](https://d3vigmphadbn9b.cloudfront.net/course-images/large-images/angular-core-deep-dive-new-2.jpg)
 
-### QQQQ => How do Signals compare to RxJs?
+# RxJs In Practice Course
 
-1. signals are a great alternative to RxJS Behavior Subjects
-2. Signals are not a direct replacement for RxJs
+If you are looking for the [RxJs In Practice Course](https://angular-university.io/course/rxjs-course), the repo with the full code can be found here:
 
-## afterRender VS afternextRender
+![RxJs In Practice Course](https://s3-us-west-1.amazonaws.com/angular-university/course-images/rxjs-in-practice-course.png)
 
-### afterRender:
+# NgRx In Depth Course
 
-1. allows you to register a callback that executes after every render cycle.
-2. Dynamic Content Sizing
+If you are looking for the [NgRx In Depth Course](https://angular-university.io/course/angular-ngrx-course), the repo with the full code can be found here:
 
-### afterNextRender:
+![NgRx In Depth Course](https://s3-us-west-1.amazonaws.com/angular-university/course-images/angular-ngrx-course.png)
 
-1. registers a callback that executes ONLY ONCE after the next render cycle, when the DOM is loaded.
-2. uses case
-   a. Initializing Third-Party Libraries,
-   b. Detaching Temporary Elements
-   c. Setting Up Element Observers
+# Angular PWA Course
 
-## Signal inputs with input()
+If you are looking for the [Angular PWA Course](https://angular-university.io/course/angular-pwa-course), the repo with the full code can be found here:
 
-1.  input() API function is a direct replacement for the @Input() decorator.
+![Angular PWA Course - Build the future of the Web Today](https://s3-us-west-1.amazonaws.com/angular-university/course-images/angular-pwa-course.png)
 
-        book = input<Book>() //as signal intial value is required, deafult will be undefined
+# Angular Security Masterclass
 
-2.  The input function returns a read-only Signal
-3.  two different types of signal inputs we can have in Angular:
-    - Optional inputs
-      - default, inputs created via input() are considered optional
-      - all, in this situation, the signal will have its value as undefined
-    - Required inputs
-      - input.required<Book>();
-      - no longer provide an initial value to the input signal.
-      - no longer omit the book property in the parent component
-4.  No more need for the OnChanges lifecycle hook
-    - Previously OnChanges hook was required to get notified when a component input changes.
-    - We can use the effect() API to get notified whenever an input signal changes
+If you are looking for the [Angular Security Masterclass](https://angular-university.io/course/angular-security-course), the repo with the full code can be found here:
 
-## Setting an input property alias
+[Angular Security Masterclass](https://github.com/angular-university/angular-security-course).
 
-we want the name of our input property to be the same as the name of the input signal.
-But sometimes, we might want the input property to have a different name
+![Angular Security Masterclass](https://s3-us-west-1.amazonaws.com/angular-university/course-images/security-cover-small-v2.png)
 
-        book = input<Book>(null, {
-        alias: "bookInput",
-        });
+# Angular Advanced Library Laboratory Course
 
-        book = input.required<Book>({
-        alias: "bookInput",
-        });
+If you are looking for the Angular Advanced Course, the repo with the full code can be found here:
 
-        <book [bookInput]="angularBook" />
+[Angular Advanced Library Laboratory Course: Build Your Own Library](https://angular-university.io/course/angular-advanced-course).
 
-## Input value transformation: the transform function
+![Angular Advanced Library Laboratory Course: Build Your Own Library](https://angular-academy.s3.amazonaws.com/thumbnails/advanced_angular-small-v3.png)
 
-1.  in some rare situations where we might want to transform the input value before it is assigned to the input signal.
-2.  The value of the transform property should be a pure function, with no side effects.
-3.  Inside this function is where we write our value transformation logic, and we must return a value from the function.
+## RxJs and Reactive Patterns Angular Architecture Course
 
-        book = input(null, {
-            transform: (value: Book | null) => {
-            if (!value) return null;
+If you are looking for the RxJs and Reactive Patterns Angular Architecture Course code, the repo with the full code can be found here:
 
-                value.title += " :TRANSFORMED";
+[RxJs and Reactive Patterns Angular Architecture Course](https://angular-university.io/course/reactive-angular-architecture-course)
 
-                return value;
+![RxJs and Reactive Patterns Angular Architecture Course](https://s3-us-west-1.amazonaws.com/angular-academy/blog/images/rxjs-reactive-patterns-small.png)
 
-            },
-        });
+## Angular Ngrx Reactive Extensions Architecture Course
 
-        book = input.required({
-            transform: (value: Book | null) => {
-            if (!value) return null;
+If you are looking for the Angular Ngrx Reactive Extensions Architecture Course code, the repo with the full code can be found here:
 
-                value.title += " :TRANSFORMED";
+[Angular Ngrx Reactive Extensions Architecture Course](https://angular-university.io/course/angular2-ngrx)
 
-                return value;
+[Github repo for this course](https://github.com/angular-university/ngrx-course)
 
-            },
-        });
+![Angular Ngrx Course](https://angular-academy.s3.amazonaws.com/thumbnails/ngrx-angular.png)
+
+## Angular 2 and Firebase - Build a Web Application Course
+
+If you are looking for the Angular 2 and Firebase - Build a Web Application Course code, the repo with the full code can be found here:
+
+[Angular 2 and Firebase - Build a Web Application](https://angular-university.io/course/build-an-application-with-angular2)
+
+[Github repo for this course](https://github.com/angular-university/angular-firebase-app)
+
+![Angular firebase course](https://angular-academy.s3.amazonaws.com/thumbnails/angular_app-firebase-small.jpg)
+
+## Complete Typescript 2 Course - Build A REST API
+
+If you are looking for the Complete Typescript 2 Course - Build a REST API, the repo with the full code can be found here:
+
+[https://angular-university.io/course/typescript-2-tutorial](https://github.com/angular-university/complete-typescript-course)
+
+[Github repo for this course](https://github.com/angular-university/complete-typescript-course)
+
+![Complete Typescript Course](https://angular-academy.s3.amazonaws.com/thumbnails/typescript-2-small.png)
