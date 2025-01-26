@@ -6,7 +6,7 @@
 
 # How signal useful and why to use
 
-1. Previously using Zone.js was used to compare the values with the old values before and after an event to know if there is any change and this has to be done for each component in the tree and if it has changed it was marked as dirty and we will re-rendered in the next change detection cycle
+1. Previously using Zone.js was used to compare the values with the old values before and after an event to know if there is any change and this has to be done for each component in the tree and if it has changed it was marked as dirty and it will re-rendered in the next change detection cycle
 
 2. Using signal now Angular can simply keeping track of signal (subscribing - notified when changed), to know when the data has been modified and can mark those component in the component tree as dirty
 
@@ -36,7 +36,7 @@
    `age = Signal(10)`
 2. Signal must be initailized
 3. to access value just call the signal variable as a function i.e invoke
-   age() // to read value
+   - `age() // to read value`
 4. To set /update
    - `signalVar.set(newVal)` // prmitive
    - `signalVar.update( oldVal => newValue)`
@@ -117,7 +117,7 @@ Ansss=> _yes using untracked_
 
 3.  The default behavior however is based on "===" referential equality, which does not allow us to identify arrays or objects that are functionally identical. as SET/UPDATE API gives new object.
 
-4.  for that we need to verride equality
+4.  for that we need to override equality
 
         object = signal(
             {
@@ -304,9 +304,9 @@ But sometimes, we might want the input property to have a different name
 
 1.  The output() API is a direct replacement for the traditional @Output() decorator.
 2.  The output function returns an OutputEmitterRef
-3.                                            deleteBook = output<Book>()
+3.                                               deleteBook = output<Book>()
 4.  The `<Book>` generic type in output`<Book>()` indicates that this output will only emit values of type Book
-5.                                                                                       // Child component
+5.                                                                                          // Child component
 
         deleteBook = output<Book>();
 
@@ -642,7 +642,7 @@ Ans => `viewChild will pick the first occurrence of the title variable`, and no 
 1.  `it won't work`
 2.  This is because the `viewChild() signal query only works for elements that are direct children of the component`, meaning elements of it's own template.
 3.  viewChild() will simply `not work for elements that are projected into the component via ng-content`.
-4.                                  feature = contentChild("feature");
+4.                                     feature = contentChild("feature");
 5.  we `didn't have to use the AfterContentInit lifecycle hook`, like we used to do with the @ContentChild decorator.
 6.  AfterContentInit work can be achieved by => `effect()`
 
@@ -738,6 +738,54 @@ Ans => `viewChild will pick the first occurrence of the title variable`, and no 
         bookTitles = contentChildren("title", {
             read: ElementRef
         });
+
+## Signal to observable
+
+        onToObservableExample() {
+            const numbers = signal(0);
+            numbers.set(1);
+            numbers.set(2);
+            numbers.set(3);
+            const numbers$ = toObservable(numbers, {
+            injector: this.injector
+            });
+            numbers.set(4);
+            numbers$.subscribe(val => {
+            console.log(`numbers$: `, val)
+            })
+            numbers.set(5);  // nly last val will be shown as within the same block angular will wait to re-render and will wait all the values to changed
+        }
+
+## Observable to Signal
+
+        onToSignalExample() {
+            try {
+            const courses$ = from(this.coursesService.loadAllCourses())
+                .pipe(
+                catchError(err => {
+                    console.log(`Error caught in catchError`, err)
+                    throw err;
+                })
+                );
+            const courses = toSignal(courses$, {
+                injector: this.injector,
+                rejectErrors: true
+            })
+            effect(() => {
+                console.log(`Courses: `, courses())
+            }, {
+                injector: this.injector
+            })
+
+            setInterval(() => {
+                console.log(`Reading courses signal: `, courses())
+            }, 1000)
+
+            }
+            catch (err) {
+            console.log(`Error in catch block: `, err)
+            }
+        }
 
 ## linkedSignal() aka writable computed()
 
