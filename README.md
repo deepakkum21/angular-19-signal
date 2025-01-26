@@ -304,9 +304,9 @@ But sometimes, we might want the input property to have a different name
 
 1.  The output() API is a direct replacement for the traditional @Output() decorator.
 2.  The output function returns an OutputEmitterRef
-3.                                               deleteBook = output<Book>()
+3.                                                 deleteBook = output<Book>()
 4.  The `<Book>` generic type in output`<Book>()` indicates that this output will only emit values of type Book
-5.                                                                                          // Child component
+5.                                                                                            // Child component
 
         deleteBook = output<Book>();
 
@@ -642,7 +642,7 @@ Ans => `viewChild will pick the first occurrence of the title variable`, and no 
 1.  `it won't work`
 2.  This is because the `viewChild() signal query only works for elements that are direct children of the component`, meaning elements of it's own template.
 3.  viewChild() will simply `not work for elements that are projected into the component via ng-content`.
-4.                                     feature = contentChild("feature");
+4.                                       feature = contentChild("feature");
 5.  we `didn't have to use the AfterContentInit lifecycle hook`, like we used to do with the @ContentChild decorator.
 6.  AfterContentInit work can be achieved by => `effect()`
 
@@ -747,11 +747,11 @@ Ans => `viewChild will pick the first occurrence of the title variable`, and no 
             numbers.set(2);
             numbers.set(3);
             const numbers$ = toObservable(numbers, {
-            injector: this.injector
+                injector: this.injector
             });
             numbers.set(4);
             numbers$.subscribe(val => {
-            console.log(`numbers$: `, val)
+                console.log(`numbers$: `, val)
             })
             numbers.set(5);  // nly last val will be shown as within the same block angular will wait to re-render and will wait all the values to changed
         }
@@ -783,7 +783,7 @@ Ans => `viewChild will pick the first occurrence of the title variable`, and no 
 
             }
             catch (err) {
-            console.log(`Error in catch block: `, err)
+                console.log(`Error in catch block: `, err)
             }
         }
 
