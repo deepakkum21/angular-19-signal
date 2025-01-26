@@ -57,11 +57,11 @@
         counter = signal(0);
 
         derivedCounter = computed(() => {
-        return this.counter() \* 10;
+            return this.counter() \* 10;
         });
 
         tenXCounter = computed(() => {
-        return this.derivedCounter() \* 10;
+            return this.derivedCounter() \* 10;
         })
 
 ### QQQQ => Can we read the value of a signal from a computed signal without creating a dependency i.e. when the source signal gets updated it should not trigger computed signal to be invoked?
@@ -71,7 +71,7 @@ Ansss=> _yes using untracked_
         counter = signal(0);
 
         derivedCounter = computed(() => {
-        return _*untracked*_(this.counter) \* 10;
+            return untracked(this.counter) * 10;
         });
 
 ### QQQQ => What is the major pitfall to look out for when creating computed signals?
@@ -132,13 +132,13 @@ Ansss=> _yes using untracked_
 
 ## Detecting signal changes with the effect() API
 
-1.  computed() API, gives us way to know when a dependent Signal has changed, and resulting in calculating new value for dervived Signal.
+1.  computed() API, gives us way to know when a dependent Signal has changed, and resulting in calculating new value for derived Signal.
 2.  But what if instead of calculating the new value of a dependent signal, we just want to detect that a value has changed for some other reason?
 3.  a situation where you need to detect that the value of a signal (or a set of signals) has changed to perform some sort of side effect, that does not modify other signals
 4.  in effect() there should be invoking of Signal (not in condition/setTimeout), because of this effect() runs atleast once.
-5.  Best place to define effect is in constractor,
+5.  Best place to define effect is in constructor,
     why?
-    - To know the dependecy Injection Context, so that while discarding the component on ngDestroy the effect also gets destro to avoid memory leak
+    - To know the dependency Injection Context, so that while discarding the component on ngDestroy the effect also gets destroy to avoid memory leak
 6.  Defining DI context manually (for GC) when effect() defined other than constructor
 
     - Inject the Injector context using inject(Injector) same as constructor(injector: Injector)
@@ -154,7 +154,7 @@ Ansss=> _yes using untracked_
              }
 
 7.  Just like in the case of the computed() API, the signal dependencies of an effect are determined dynamically based on the last call to the effect function.
-    - if no signal invocation is done in any of the effect() call, the the signal depency gets broken.
+    - if no signal invocation is done in any of the effect() call, the the signal dependency gets broken.
 8.  UseCase
     - logging the value of a number of signals using a logging library
     - exporting the value of a signal to localStorage or a cookie [saving form data]
@@ -162,7 +162,7 @@ Ansss=> _yes using untracked_
 
 ## How to clean up effects manually
 
-1.  By deafault when effect defined inside contructor it know its DI context or when passed injector context using injector, as options to the effect, so the component gets destroyed the effect will get cleanedup.
+1.  By default when effect defined inside constructor it know its DI context or when passed injector context using injector, as options to the effect, so the component gets destroyed the effect will get cleaned up.
 2.  an effect() can be manually destroyed by calling destroy() on the EffectRef instance that it returns when first created.
 3.  In these cases, you probably also want to disable the default cleanup behavior by using the manualCleanup option:
 
@@ -174,7 +174,7 @@ Ansss=> _yes using untracked_
                 this.counter();
             }, {
                 injector: this.injector,
-                manualCleanup: true //disable default cleanup behaviour
+                manualCleanup: true //disable default cleanup behavior
             })
         }
 
@@ -186,7 +186,7 @@ Ansss=> _yes using untracked_
 
 1.  Sometimes just removing the effect function from memory is not enough for a proper cleanup.
 2.  On some occasions, we might want to perform some sort of cleanup operation like closing a network connection or otherwise releasing some resources when an effect gets destroyed.
-3.  cleanup() will be called everytime the effect() finsihed its job and also it will be called when the effect() is cleanedup as part of GC or manually.
+3.  cleanup() will be called everytime the effect() finished its job and also it will be called when the effect() is cleanedup as part of GC or manually.
 4.  usecase:-
 
     - unsubscribing from an observable
@@ -242,7 +242,7 @@ Anss => Absolutely! You can create signals anywhere you want. No constraint says
 
 1.  input() API function is a direct replacement for the @Input() decorator.
 
-        book = input<Book>() //as signal intial value is required, deafult will be undefined
+        book = input<Book>() //as signal initial value is required, default will be undefined
 
 2.  The input function returns a read-only Signal
 3.  two different types of signal inputs we can have in Angular:
@@ -250,7 +250,7 @@ Anss => Absolutely! You can create signals anywhere you want. No constraint says
       - default, inputs created via input() are considered optional
       - all, in this situation, the signal will have its value as undefined
     - Required inputs
-      - input.required<Book>();
+      - `input.required<Book>();`
       - no longer provide an initial value to the input signal.
       - no longer omit the book property in the parent component
 4.  **No more need for the OnChanges lifecycle hook**
@@ -304,9 +304,9 @@ But sometimes, we might want the input property to have a different name
 
 1.  The output() API is a direct replacement for the traditional @Output() decorator.
 2.  The output function returns an OutputEmitterRef
-3.                               deleteBook = output<Book>()
+3.                                         deleteBook = output<Book>()
 4.  The `<Book>` generic type in output`<Book>()` indicates that this output will only emit values of type Book
-5.                                                                          // Child component
+5.                                                                                    // Child component
 
         deleteBook = output<Book>();
 
@@ -642,7 +642,7 @@ Ans => `viewChild will pick the first occurrence of the title variable`, and no 
 1.  `it won't work`
 2.  This is because the `viewChild() signal query only works for elements that are direct children of the component`, meaning elements of it's own template.
 3.  viewChild() will simply `not work for elements that are projected into the component via ng-content`.
-4.                     feature = contentChild("feature");
+4.                               feature = contentChild("feature");
 5.  we `didn't have to use the AfterContentInit lifecycle hook`, like we used to do with the @ContentChild decorator.
 6.  AfterContentInit work can be achieved by => `effect()`
 
@@ -738,3 +738,26 @@ Ans => `viewChild will pick the first occurrence of the title variable`, and no 
         bookTitles = contentChildren("title", {
             read: ElementRef
         });
+
+## linkedSignal() aka writable computed()
+
+        // syntax
+        linkedSignal({
+            source: () => ({
+                key1: sourceSignal1,
+                key2: sourceSignal2,
+                ....
+            }),
+            computation: (newSourceValue, previousSourceValue) => {
+                //computation logic
+                newSourceValue.sourceSignal1()
+                previousSourceValue.sourceSignal2()
+                return value // mandatory
+            }
+        })
+
+1. it creates `writable, auto-updating signals that respond dynamically to changes in other signals`
+2. can't be done using computed signal as they create readonly signal.
+3. When needs a `new value to be calculated based on series of signals and also want it to be writable signal`
+
+## resourceSignal()
