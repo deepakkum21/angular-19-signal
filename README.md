@@ -304,9 +304,9 @@ But sometimes, we might want the input property to have a different name
 
 1.  The output() API is a direct replacement for the traditional @Output() decorator.
 2.  The output function returns an OutputEmitterRef
-3.                              deleteBook = output<Book>()
+3.                               deleteBook = output<Book>()
 4.  The `<Book>` generic type in output`<Book>()` indicates that this output will only emit values of type Book
-5.                                                                         // Child component
+5.                                                                          // Child component
 
         deleteBook = output<Book>();
 
@@ -642,7 +642,7 @@ Ans => `viewChild will pick the first occurrence of the title variable`, and no 
 1.  `it won't work`
 2.  This is because the `viewChild() signal query only works for elements that are direct children of the component`, meaning elements of it's own template.
 3.  viewChild() will simply `not work for elements that are projected into the component via ng-content`.
-4.                    feature = contentChild("feature");
+4.                     feature = contentChild("feature");
 5.  we `didn't have to use the AfterContentInit lifecycle hook`, like we used to do with the @ContentChild decorator.
 6.  AfterContentInit work can be achieved by => `effect()`
 
@@ -706,3 +706,35 @@ Ans => `viewChild will pick the first occurrence of the title variable`, and no 
 ### Making contentChild() to be required
 
         feature = contentChild.required("feature");
+
+## contentChildren <=> @contentChildren
+
+1.  contentChildren() is the content projection equivalent of viewChildren()
+2.  It allows us to `query multiple elements projected into the component via ng-content`, instead of just one like it's the case of viewChildren().
+
+        <book>
+            <div #title>Title 1</div>
+            <div #title>Title 2</div>
+            <div #title>Title 3</div>
+        </book>
+
+
+        bookTitles = contentChildren("title");  //return a signal which emits as values a list of ElementRef
+
+        ------------------------
+
+        <book>
+            <title>Title 1</title>
+            <title>Title 2</title>
+            <title>Title 3</title>
+        </book>
+
+        bookTitles = contentChildren(TitleComponent); /return a signal which emits as values a list of titleComponent
+
+### contentChildren read
+
+1.  to query based on directive /component / ElementRef
+
+        bookTitles = contentChildren("title", {
+            read: ElementRef
+        });
