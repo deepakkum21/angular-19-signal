@@ -304,9 +304,9 @@ But sometimes, we might want the input property to have a different name
 
 1.  The output() API is a direct replacement for the traditional @Output() decorator.
 2.  The output function returns an OutputEmitterRef
-3.         deleteBook = output<Book>()
+3.                              deleteBook = output<Book>()
 4.  The `<Book>` generic type in output`<Book>()` indicates that this output will only emit values of type Book
-5.                                                    // Child component
+5.                                                                         // Child component
 
         deleteBook = output<Book>();
 
@@ -549,3 +549,160 @@ Ans => `viewChild will pick the first occurrence of the title variable`, and no 
             <b #title>Title</b>
         </div>
         titleRef = viewChild.required("bold");
+
+### viewChildren() <=> @viewChildren
+
+1. viewChildren() is a signal-based query used to `retrieve multiple elements from the component's template`, instead of just a single one like it's the case with
+   viewChild().
+2. These elements can either be, like in the case of viewChild:
+   - ElementRef instances (plain HTML elements)
+   - Angular component instances
+   - directives linked to a component
+
+### Query components with viewChildren()
+
+        <div>
+            <book/>
+            <book/>
+            <book/>
+            <book/>
+        </div>
+
+        bookComponents =
+          viewChildren(BookComponent);
+
+        constructor() {
+            effect(() => {
+                console.log(this.bookComponents());  // returns list of 4 book component
+            });
+        }
+
+### Using viewChildren() to find multiple matches of the same template reference
+
+        <div>
+            <div #book>First Book</div>
+            <div #book>Second Book</div>
+            <div #book>Third Book</div>
+        </div>
+
+        books = viewChildren("book");  will return 3 book ElementRef
+
+### Setting "read" on viewChildren()
+
+1.  the `"read" parameter, we can specify what we want to query in the matching elements`, instead of relying on defaults.
+2.  We can `mention ElementRef/component/directive which we want query to be matched to`
+
+        <div>
+            <book #book>First Book</book>
+            <div #book>Second Book</book>
+            <div #book>Third Book</book>
+        </div>
+
+        books = viewChildren<BookComponent>(
+            "book", {
+                read: ElementRef
+            });
+
+## contentChild() <=> @contentChild
+
+1.  Angular content projection https://blog.angular-university.io/angular-ng-content/
+2.  Content projection is a powerful feature of the Angular framework that enables building highly configurable and reusable components.
+3.  Imagine that we would like to customize the BookComponent component by passing it a feature to be displayed in a book page, like so:
+
+        // app component
+        <book>
+            <div #feature>
+                In depth guide to Angular
+            </div>
+        </book>
+
+        // We can pass any HTML that we want and that will be used for the title.
+
+        // book component
+        <div class="book">
+            <div class="features-container">
+                <ng-content></ng-content>
+            </div>
+        </div>
+
+        feature = viewChild("feature");   // this won't work viewChild() will simply not work for elements that are projected into the component via ng-content
+        feature = contentChild("feature"); // this will work
+
+        constructor() {
+            effect(() => {
+                console.log("Feature: ",
+                this.feature());
+            });
+        }
+
+        // book component is simply taking all the content passed to it and projecting it into the ng-content tag.
+
+#### Q. Now imagine that for some reason, the <book/> component needs to be able to query the content projected into it.
+
+1.  `it won't work`
+2.  This is because the `viewChild() signal query only works for elements that are direct children of the component`, meaning elements of it's own template.
+3.  viewChild() will simply `not work for elements that are projected into the component via ng-content`.
+4.                    feature = contentChild("feature");
+5.  we `didn't have to use the AfterContentInit lifecycle hook`, like we used to do with the @ContentChild decorator.
+6.  AfterContentInit work can be achieved by => `effect()`
+
+### What is the difference between viewChild and contentChild?
+
+| viewChild()                                                                                                                            | contentChild                                                                                                                                                                                                                       |
+| -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| viewChild() is used to query elements that are `direct children of the component`, and `exist on the component's own private template` | - contentChild() is used to query elements that are `projected into the component via ng-content`. - Those project elements exist outside the template of the component using contentChild, in their parent component's templates. |
+| can use viewChild() to query components, plain HTML elements, or directives                                                            | can use contentChild() to query `components, plain HTML elements, or directives in all the content projected via ng-content`.                                                                                                      |
+
+### contentChild() and Component Queries
+
+        <book>
+            <feature>
+                In depth guide to Angular
+            </feature>
+        </book>
+
+
+        <div class="book">
+            <div class="features-container">
+                <ng-content></ng-content>
+            </div>
+        </div>
+
+        feature = contentChild(FeatureComponent);  // queried component
+
+        constructor() {
+            effect(() => {
+                console.log("Feature: ",
+                this.feature());
+            });
+        }
+
+### Using "read" on contentChild()
+
+        <book>
+            <feature>
+                In depth guide to Angular
+            </feature>
+        </book>
+
+
+        <div class="book">
+            <div class="features-container">
+                <ng-content></ng-content>
+            </div>
+        </div>
+
+        feature = contentChild("feature", {
+            read: ElementRef         // return as the ElementRef of the queried element, instead of the component instance, in case that the matching element is a component.
+        });
+
+        constructor() {
+            effect(() => {
+                console.log("Feature: ",
+                this.feature());
+            });
+        }
+
+### Making contentChild() to be required
+
+        feature = contentChild.required("feature");
