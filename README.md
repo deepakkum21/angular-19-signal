@@ -304,9 +304,9 @@ But sometimes, we might want the input property to have a different name
 
 1.  The output() API is a direct replacement for the traditional @Output() decorator.
 2.  The output function returns an OutputEmitterRef
-3.                                                   deleteBook = output<Book>()
+3.                                                     deleteBook = output<Book>()
 4.  The `<Book>` generic type in output`<Book>()` indicates that this output will only emit values of type Book
-5.                                                                                              // Child component
+5.                                                                                                // Child component
 
         deleteBook = output<Book>();
 
@@ -642,7 +642,7 @@ Ans => `viewChild will pick the first occurrence of the title variable`, and no 
 1.  `it won't work`
 2.  This is because the `viewChild() signal query only works for elements that are direct children of the component`, meaning elements of it's own template.
 3.  viewChild() will simply `not work for elements that are projected into the component via ng-content`.
-4.                                         feature = contentChild("feature");
+4.                                           feature = contentChild("feature");
 5.  we `didn't have to use the AfterContentInit lifecycle hook`, like we used to do with the @ContentChild decorator.
 6.  AfterContentInit work can be achieved by => `effect()`
 
@@ -833,3 +833,25 @@ https://medium.com/@giorgio.galassi/angular-v19-understanding-the-new-resource-a
                 // api call
             }
         })
+
+### afterRenderEffect()
+
+1.  handle `side effects that should only occur after the component has finished rendering`.
+2.  The effect runs after each render cycle if its dependencies change
+3.  `‘afterRender’ and ‘afterNextRender’, this effect tracks specified dependencies`
+4.  `‘afterRender’ and ‘afterNextRender’ do not track any dependencies and always schedule a callback to run after the render cycle`.
+
+        counter = signal(0);
+
+        constructor() {
+            afterRenderEffect(() => {
+            console.log('after render effect', this.counter());
+            })
+
+            afterRender(() => {
+            console.log('after render', this.counter())
+            })
+        }
+
+5.  the `afterRender` callback will be `executed after each render cycle`.
+6.  The `afterRenderEffect` callback, on the other hand, will be executed `after rendering cycles only if the value of the signal counter has changed`.
