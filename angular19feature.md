@@ -1,3 +1,55 @@
+# Angular 19
+
+## A. @let
+
+1.  @let template variable stable [intro in v18].
+2.  scoped to the current template
+3.  they cannot be reassigned or accessed from parent or sibling components\
+
+        @let userName = 'Jane Doe';
+        <h1>Welcome, {{ userName }}</h1>
+
+        <input #userInput type="text">
+        @let greeting = 'Hello, ' + userInput.value;
+        <p>{{ greeting }}</p>
+
+        @let userData = userObservable$ | async;
+        <div>
+        	User details: {{ userData.name }}
+        </div>
+
+## B. Updated to effect()
+
+1.  `removed allowSignalWrites flag`
+2.  this flag was intended `to limit when signals could be set within effect()`, pushing developers towards using computed() for certain scenarios.
+
+        effect(
+        	() => {
+        	console.log(this.users());
+        	},
+        	//This flag is removed in the new version
+        	{ allowSignalWrites: true }
+        );
+
+## C. routerOutletData input for RouterOutlet
+
+1.  providing a streamlined way `for parent components to send data to their child components routed through the outlet`.
+2.  When routerOutletData is set, the associated data becomes accessible in child components through the `ROUTER_OUTLET_DATA token, which employs a Signal type`.
+
+        	// Parent Component
+        	<router-outlet [routerOutletData]="routerOutletData()" />
+
+        	// Child component routed through the outlet:
+        	export class ChildComponent {
+        		readonly routerOutletData: Signal<MyType> = inject(ROUTER_OUTLET_DATA);
+        	}
+
+## D. Standalone by default
+
+1. standalone: true will become the default setting for components, directives, and pipes in Angular.
+
+==============================
+
 # Experimental V19
 
 ## 1. linkedSignal()
