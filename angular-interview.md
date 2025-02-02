@@ -10,6 +10,8 @@
 ## Emulated [Default]
 
 1.  Angular `emulates Shadow DOM` behavior by `adding a unique attribute` to each element and its associated styles.`ng-reflect or ng-...`
+    - `nghost-c0` - for component
+    - `ngcontent-c1` - for elements inside the component
 2.  Why use it?
 
     - `Ensures style isolation and encapsulation.`
@@ -64,3 +66,57 @@
      Useful for layout and design systems that need to apply to many parts of the app without being confined to a specific component.
 4. Limitations:
    - This `breaks encapsulation, so styles may leak into other components`, potentially causing unintended side effects.
+
+# :host , ::ng-deep (/deep/ and >>>)
+
+https://blog.angular-university.io/angular-host-context/
+
+1. `special selectors that allow you to target elements in a component’s template from its styles`.
+2. These can be useful when you want to `apply styles from the component's styles to child elements or elements outside the component while respecting the Angular view encapsulation`.
+
+## :host => target component root element / roo container <app-comp> <book> [nghost-c0]
+
+## ::ng-deep [dep] => target component child element from parent [ngcontent-c0]
+
+## :host ::ng-deep => target from host the project element using `<ng-content>`
+
+## :host
+
+1.  selector allows you to `target the component’s root element` (the element in the DOM that corresponds to the component).
+2.  This can be useful when `you need to apply styles to the wrapper or container element of the component`.
+
+            <!-- my-component.component.html -->
+            <div>
+                <p>Content inside the component</p>
+            </div>
+
+            /* my-component.component.css */
+            :host {
+                display: block;
+                border: 2px solid #000;
+                padding: 10px;
+                background-color: #f0f0f0;
+            }
+
+3.  Explanation:- in above ex Here, :host applies styles to the root `<app-my-component> `element in the DOM. This means the component will be displayed as a block, with padding and a background color, affecting the root wrapper element.
+
+## ::ng-deep or /deep/ or >>> [Deprecated]
+
+1.  used to `style child elements of the component, even though those child elements may be inside other Angular components`.
+2.  It allows styles to `"pierce" the view encapsulation, making it easier to apply styles to nested components or deeply nested elements`.
+3.  ::ng-deep is `deprecated` in Angular and will eventually be removed. However, it’s still widely used as a workaround until a proper solution is provided (`usually with the new Shadow DOM approach`).
+
+        <!-- parent.component.html -->
+        <app-child></app-child>
+
+        <!-- child.component.html -->
+        <p>This is the child component</p>
+
+
+        /* parent.component.css */
+        ::ng-deep app-child p {
+            color: red;
+            font-size: 20px;
+        }
+
+4.  Explanation: The ::ng-deep selector allows you to target the `<p>` element inside the `<app-child>` component from the parent component’s styles. Without ::ng-deep, Angular's view encapsulation would prevent the parent from styling the child component directly.
