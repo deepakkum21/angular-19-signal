@@ -25,7 +25,7 @@
 
         effect(
         	() => {
-        	console.log(this.users());
+        		console.log(this.users());
         	},
         	//This flag is removed in the new version
         	{ allowSignalWrites: true }
@@ -92,10 +92,10 @@
 3.  Request :- but it could just as well be a computed signal consisting of multiple values
 4.  Loader :- which we asynchronously download data (the function should return promise).
 5.  The return signal has
-    a. isLoading property
-    b. value property
-    c. error property
-    d. reload()
+    - isLoading property
+    - value property
+    - error property
+    - reload()
 
 ## C. afterRenderEffect()
 
