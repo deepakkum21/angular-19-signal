@@ -7,7 +7,7 @@
    - `ShadowDom`
    - `None`
 
-## Emulated [Default]
+## Emulated [Default] [special attributes] [ngContent-c0 / ngHost-C1]
 
 1.  Angular `emulates Shadow DOM` behavior by `adding a unique attribute` to each element and its associated styles.`ng-reflect or ng-...`
     - `nghost-c0` - for component
@@ -25,10 +25,10 @@
                  <h1 _ngcontent-c0="">Hello World</h1>
              </app-my-component>
 
-## ShadowDom
+## ShadowDom [when every browser supports then it might became default] #shadow-root
 
 1.  Behavior
-    - Angular uses the `native Shadow DOM` to `encapsulate the component’s view`.
+    - Angular uses the `native Shadow DOM [browser api's]` to `encapsulate the component’s view`.
     - This is a `web standard that provides true isolation of styles and structure`.
 2.  How it works:
 
@@ -76,7 +76,7 @@ https://blog.angular-university.io/angular-host-context/
 
 ## :host => target component root element / root container <app-comp> <book> [nghost-c0]
 
-## ::ng-deep [dep] => target component child element from parent [ngcontent-c0] and skip addition of any [ngcontent-c0] like angular class
+## ::ng-deep [dep] => target component child element from parent [ngcontent-c0] and skip addition of any special [ngcontent-c0] like angular class
 
 ## :host ::ng-deep => target from host the project element using `<ng-content>`
 
@@ -171,3 +171,107 @@ https://blog.angular-university.io/angular-host-context/
 
 3.  ng-template used for
     - reuse a particular block of html either from parent or same template
+
+## Angular DI
+
+1. Components class doesn't know how to instantiate the Service which are injected.
+2. `Angular's provider provide the instantiated service via DI, via factory function`
+   - using `PROVIDERS array`
+   - `@injectable ({provideIn: root/module name})`
+
+## Create own provider
+
+        // course Service somwhere created
+        // CoursesService
+
+        // Course component or somwehere globally
+        // Create function returning the new Object of Service with dependency
+        function courseServiceProvider(http: HttpClient) = {
+            return CoursesService(http)
+        }
+
+        // Create a unique injector using InjectionToken
+        export const COURSE_SERVICE = new InjectionToken<CoursesService>('COURSE_SERVICE')  // pass unique name
+
+        // now in providers array at app config or component level
+        providers: [
+            {
+                provide: COURSE_SERVICE,  // can give Service class name too
+                useFactory: courseServiceProvider,
+                deps: [
+                    HttpClient    // dependency which the Service have DI
+                ]
+            }
+        ]
+
+        // now in the constructor or component DI via unique name & inject fn
+        constructor(@inject('COURSE_SERVICE') private courseService CoursesService) {
+
+        }
+
+        or
+        courseService = inject(CoursesService); // when in provide given CoursesService
+
+        ------------------------------------------
+
+        // the above providers things acn be further made easy
+        providers: [
+            {
+                provide: CoursesService,
+                useClass: CoursesService
+            }
+        ]
+        // className is always unique
+        // when using like able no need to create InjectionToken and also not req to create a providerFunction
+
+        -------------------------------------------
+
+        // again it can be simplified
+         providers: [
+            CoursesService
+        ]
+        // Since angular knows how to instantiate class using constructor
+
+## Tree Shakeable Service
+
+1. if services are `instantiated by providers: [] then even if the service is not being used anywhere the service will be added in the bundle`.
+2. But if the service are `instantiated using @injectable({providedIn: ''}), then if only services are used then only it will added as part of bundle`.
+
+## App config Related Service
+
+        export interface AppConfig {
+            apiUrl:string;
+            courseCacheSize:number;
+        }
+
+
+        export const APP_CONFIG:AppConfig = {
+            apiUrl: 'http://localhost:9000',
+            courseCacheSize: 10
+        }
+
+        // tre shakable => if not used the service will not be added as part of bundle
+        export const CONFIG_TOKEN =
+            new InjectionToken<AppConfig>('CONFIG_TOKEN',
+                {
+                    providedIn: 'root',
+                    factory: () => APP_CONFIG   // can use useValue: APP_CONFIG also
+                });
+
+        // usage
+        ✔️ @Inject(CONFIG_TOKEN) private config: AppConfig
+        ❌ private config: AppConfig   // will not work since interface as not present during runtime need to provide unique name instead of interfaceName
+
+## Other DI Decorators
+
+1. @Optional()
+   - will mark the service as optional and `will not break the app while bootstrap phase`, will break when it in being invoked
+2. @Self()
+   - when we `don't want the parent or global instance of service and want a private instance of service`
+   - but we need to provide providers: [ serviceName] in that component
+3. @SkipSelf()
+   - if we want `to skip the component provider Service but want parent provided Service`
+   - Parent should have the Service provided
+4. @Host()
+   - if we `want to have to host provided Service Dependency and not global or parent`
+   - generally used in case of directive, where directive binded Host Dependency needed
