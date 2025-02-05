@@ -67,18 +67,20 @@
 4. Limitations:
    - This `breaks encapsulation, so styles may leak into other components`, potentially causing unintended side effects.
 
-# :host , ::ng-deep (/deep/ and >>>)
+# :host , ::ng-deep (/deep/ and >>>), :host-context
 
 https://blog.angular-university.io/angular-host-context/
 
 1. `special selectors that allow you to target elements in a component’s template from its styles`.
 2. These can be useful when you want to `apply styles from the component's styles to child elements or elements outside the component while respecting the Angular view encapsulation`.
 
-## :host => target component root element / roo container <app-comp> <book> [nghost-c0]
+## :host => target component root element / root container <app-comp> <book> [nghost-c0]
 
-## ::ng-deep [dep] => target component child element from parent [ngcontent-c0]
+## ::ng-deep [dep] => target component child element from parent [ngcontent-c0] and skip addition of any [ngcontent-c0] like angular class
 
 ## :host ::ng-deep => target from host the project element using `<ng-content>`
+
+## :host-context(class-name) => theme related changes
 
 ## :host
 
@@ -103,8 +105,10 @@ https://blog.angular-university.io/angular-host-context/
 ## ::ng-deep or /deep/ or >>> [Deprecated]
 
 1.  used to `style child elements of the component, even though those child elements may be inside other Angular components`.
-2.  It allows styles to `"pierce" the view encapsulation, making it easier to apply styles to nested components or deeply nested elements`.
-3.  ::ng-deep is `deprecated` in Angular and will eventually be removed. However, it’s still widely used as a workaround until a proper solution is provided (`usually with the new Shadow DOM approach`).
+2.  also, it should be `used for elements which we have received from CONTENT PROJECTION`
+3.  It allows styles to `"pierce" the view encapsulation, making it easier to apply styles to nested components or deeply nested elements`.
+4.  ::ng-deep is `deprecated` in Angular and will eventually be removed. However, it’s still widely used as a workaround until a proper solution is provided (`usually with the new Shadow DOM approach`).
+5.  skip addition of any [ngcontent-c0] like angular class, because it breaks angular view encapsulation
 
         <!-- parent.component.html -->
         <app-child></app-child>
@@ -119,4 +123,51 @@ https://blog.angular-university.io/angular-host-context/
             font-size: 20px;
         }
 
-4.  Explanation: The ::ng-deep selector allows you to target the `<p>` element inside the `<app-child>` component from the parent component’s styles. Without ::ng-deep, Angular's view encapsulation would prevent the parent from styling the child component directly.
+6.  Explanation: The ::ng-deep selector allows you to target the `<p>` element inside the `<app-child>` component from the parent component’s styles. Without ::ng-deep, Angular's view encapsulation would prevent the parent from styling the child component directly.
+
+## structural directive \*ngIf
+
+1.  structural directive are `internally converted to ng-template code`
+2.  eg
+
+        <component *ngIf="book[0] as book">
+            // other html
+        </component>
+
+        will be converted to
+
+        <ng-template [ngIf]="books" let-book>
+            <component >
+                // other html
+            </component>
+        </ng-template>
+
+## template && ngTemplateOutlet
+
+1.  templates ng-template can be passed as input to child component
+2.  here blankImage template is passed to course-card as input
+
+        // parent
+        <ng-template #blankImage let-courseName="description">
+            <p class="warn">{{courseName}} has no image yet.</p>
+            <img src="/assets/empty-image.png">
+        </ng-template>
+
+        <course-card
+                (courseSelected)="onCourseSelected($event)"
+                    [course]="course" [noImageTpl]="blankImage">
+            <course-image [src]="course.iconUrl"></course-image>
+            <div class="course-description">
+                {{ course.longDescription }}
+            </div>
+        </course-card>
+
+        // child
+        @Input() noImageTpl: TemplateRef<any>;
+
+        <ng-container  *ngTemplateOutlet="noImageTpl;context: {description:course.description}" />
+
+        whatever object is passed as part of context in *ngTemplateOutlet is sent to ngTemplate declared in parent
+
+3.  ng-template used for
+    - reuse a particular block of html either from parent or same template
