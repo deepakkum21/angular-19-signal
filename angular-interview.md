@@ -275,3 +275,51 @@ https://blog.angular-university.io/angular-host-context/
 4. @Host()
    - if we `want to have to host provided Service Dependency and not global or parent`
    - generally used in case of directive, where directive binded Host Dependency needed
+
+# Change Detection
+
+1. Default
+2. OnPush
+3. Custom Change Detection [ ChangeDetectorRef]
+
+## Default
+
+1. If anything as lead to change of the value, the angular will `look check from top to bottom` if changes to that particular thing has led to changes to any other part
+2. not performant
+
+## OnPush
+
+1. Angular is `not going check the changes by analyzing each of the expression of the template` instead it will detect
+   - `the changes of the input()`
+   - `incase of event triggered`
+   - `if an observable is registered using async pipe in template`
+2. performance is better as it skips the branch is input() is not changed by not mutating the object
+3. `use immutable object`
+
+## Custom Change Detection [ ChangeDetectorRef]
+
+1.  when we manually want angular to look for changes i.e. invoke change detection
+2.  Should not be used frequently
+
+        cd= inject(ChangeDetectorRef);
+
+        ngDoCheck() {
+            cd.markForCheck();  //best place  when we want to invoke the change detection
+        }
+
+# Performance Optimization
+
+1.  OnPush
+2.  Attribute Decorator
+
+    - If one feels `some of the input to child component is static and will never change @Attribute()` in constructor instead of giving it as @input() to child
+    - So that angular doesn't check for its value change on subsequent cycle.
+
+            // Parent
+            <course-card *ngFor="let course of  courses  "
+                 (courseChanged)="save($event)"
+                 type="beginner"                      // this is shared by attribute decorator for static data
+                 [course]="course" />
+
+            // child
+            constructor(@Attribute('type') private type: string) { }
