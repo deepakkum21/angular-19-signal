@@ -381,3 +381,34 @@ https://blog.angular-university.io/angular-host-context/
 - called only once when component is destroyed
 - used to cleanup activity
 - unsubscribe observables
+
+# @Pipe
+
+- are used for transformation
+- @Pipe is used
+- `implements PipeTransform` interface and has one method `transform`
+
+  - 1st argument :- value which needs transformation
+  - 2nd argument :- parameter to pipe
+  - 3rd .....
+
+          @Pipe({
+              name: 'nameofpipe',
+              pure: true  //default
+          })
+          export class DemoPipe implements PipeTransform{
+              transform(value: <t>, param1)
+          }
+
+## 1. Pure Pipe
+
+- By `default pipes are pure to improve performance`
+- will `not be triggered again until reference of the value on which transformation is applied changes `
+- if mutated input value then will not trigger
+-
+
+## 2. Impure Pipe
+
+- can add `pure: false` to decorator
+- decreased performance
+- `mutated input will also trigger the pipe`
