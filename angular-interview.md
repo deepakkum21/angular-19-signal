@@ -329,39 +329,55 @@ https://blog.angular-university.io/angular-host-context/
 - life cycle hooks are not to be called manually
 - these are called by angular internally depending on the stage/life of the component
 
-1. Constructor
+## 1. Constructor
 
-   - `should not have initialization logic`
-   - access to input variable are not available
-   - `best for DI`
+- `should not have initialization logic`
+- access to input variable are not available
+- `best for DI`
 
-2. ngOnChanges(changes: SimpleChange)
-   - called `after each change detection`
-   - `will be called whenever the input gets changed`
-   - when the reference gets changed and i.e. not by mutating
-   - SimpleChange has previous and currentValue
-3. ngOnInIt
-   - `called only once`
-4. ngDoCheck
-   - called `after each change detection`
-   - `custom change detection`
-5. ngContentInit
-   - only once called
-   - `any initialization done for @contentChild() property`
-6. ngContentChecked
-   - `called after each change detection`
-   - this is `called when the content projection elements are finished changes`
-   - we `cannot modify any property which are being used as part of that content projection`, because it will defeat the purpose of this lifecycle hook as it will run in infinite loop
-   - last place to modify data of the component except the projected property
-7. ngViewInit
-   - only once called
-   - `any initialization done for @viewChild() property`
-8. ngViewChecked
-   - `called after each change detection`
-   - cannot and should modify data which are being used in the component view, angular will not now about this
-   - useful to apply scrolling , setting focus after adding elements to list, anything which doesn't affect the view
-9. ngAfterNexRender
-10. ngDestroy
-    - called only once when component is destroyed
-    - used to cleanup activity
-    - unsubscribe observables
+## 2. ngOnChanges(changes: SimpleChange)
+
+- called `after each change detection`
+- `will be called whenever the input gets changed`
+- when the reference gets changed and i.e. not by mutating
+- SimpleChange has previous and currentValue
+
+## 3. ngOnInIt
+
+- `called only once`
+
+## 4. ngDoCheck
+
+- called `after each change detection`
+- `custom change detection`
+
+## 5. ngContentInit
+
+- only once called
+- `any initialization done for @contentChild() property`
+
+## 6. ngContentChecked
+
+- `called after each change detection`
+- this is `called when the content projection elements are finished changes`
+- we `cannot modify any property which are being used as part of that content projection`, because it will defeat the purpose of this lifecycle hook as it will run in infinite loop
+- last place to modify data of the component except the projected property
+
+## 7. ngViewInit
+
+- only once called
+- `any initialization done for @viewChild() property`
+
+## 8. ngViewChecked
+
+- `called after each change detection`
+- cannot and should modify data which are being used in the component view, angular will not now about this
+- useful to apply scrolling , setting focus after adding elements to list, anything which doesn't affect the view
+
+## 9. ngAfterNexRender
+
+## 10. ngDestroy
+
+- called only once when component is destroyed
+- used to cleanup activity
+- unsubscribe observables
