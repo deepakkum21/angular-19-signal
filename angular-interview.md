@@ -311,6 +311,7 @@ https://blog.angular-university.io/angular-host-context/
 
 1.  OnPush
 2.  Attribute Decorator
+3.  @defer
 
     - If one feels `some of the input to child component is static and will never change @Attribute()` in constructor instead of giving it as @input() to child
     - So that angular doesn't check for its value change on subsequent cycle.
@@ -323,6 +324,62 @@ https://blog.angular-university.io/angular-host-context/
 
             // child
             constructor(@Attribute('type') private type: string) { }
+
+# @Defer
+
+https://angular.dev/guide/templates/defer
+
+- enables a more `efficient way to load and render components lazily`
+- Components, directives, pipes, and any component CSS styles can be deferred when loading an application.
+- allows for `components to be loaded on-demand,` which can significantly improve the initial load time of an Angular application
+- helps you to `defer the initialization of components until they are needed`, which can be especially useful for performance optimization
+- they need to meet two conditions:
+  - They `must be standalone`.
+  - They `cannot be referenced outside of @defer blocks within the same file`
+-           @defer {
+                    // code which can be loaded on demand
+            }
+
+## 1. @Placeholder
+
+- the part of `code which will be shown until @defer part is being loaded`
+- optional block that declares `what content to show before the @defer block is triggered.`
+- this will `loaded eagerly with all its dependencies`
+- accepts an optional parameter to specify the minimum amount of time that this placeholder should be shown after the placeholder content initially renders.
+-          @defer {
+                <large-component />
+            } @placeholder (minimum 500ms) {
+                <p>Placeholder content</p>
+            }
+
+## 2. @loading
+
+- is an `optional block that allows you to declare content that is shown while deferred dependencies are loading`. It replaces the @placeholder block once loading is triggered
+- `dependencies are eagerly loaded` (similar to @placeholder).
+- The @loading block accepts `two optional parameters` to help prevent fast flickering of content
+  - `minimum` - the minimum amount of time that this placeholder should be shown
+  - `after` - the amount of time to wait after loading begins before showing the loading template
+-       @defer {
+            <large-component />
+        } @loading (after 10ms; minimum 10ms){
+            <img alt="loading..." src="loading.gif" />
+        } @placeholder {
+            <p>Placeholder content</p>
+        }
+- `by default @defer === @defer(on idle; prefetch on idle)`
+  - i.e. when browser is idle then the @defer block is triggered
+  - and then prefetching of data is also triggered when browser is idle but both are different triggers
+
+## 3. @error
+
+- The @error `block is an optional block that displays if deferred loading fails. `
+- Similar to @placeholder and @loading, the dependencies of the `@error block are eagerly loaded.`
+-           @defer {
+                <large-component />
+            } @error {
+
+                <p>Failed to load large component.</p>
+            }
 
 # Life Cycle Hooks
 
@@ -424,3 +481,25 @@ https://blog.angular-university.io/angular-host-context/
 ## Pluralization
 
 `<div i18n> { coursesTotal, plural, =0 {No Course present}, =1 {One Course is present}, other { total {{ courseTotal}} course are present }} <div>`
+
+# Custom Elements
+
+- Custom Elements can be `instantiated by browser compared to regular elements of angular where angular will instantiate them`
+- Angular Custom Elements are a way of `encapsulating Angular components into reusable Web Components that can be used outside of Angular applications`.
+- Web Components are a browser-native feature that allows for the creation of reusable and self-contained elements.
+- By using Angular Custom Elements, `you can package your Angular components into custom HTML tags, making them compatible with non-Angular frameworks or even vanilla JavaScript.`
+- Installing Necessary Dependencies
+  1. npm install @angular/elements
+  2. npm install @webcomponents/custom-elements
+-       // custom ele component
+        <MyCustomElement> <MyCustomElement>
+
+        const el = createCustomElement(MyCustomElementComponent, { injector: this.injector });
+        customElements.define('my-custom-element', el);
+
+        // needs to add MyCustomElementComponent in entries array of AppModule
+        @NgModule({
+            entries: [MyCustomElementComponent]
+        })
+
+- Now MyCustomElement can be used as normal html element
