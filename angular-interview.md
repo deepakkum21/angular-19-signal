@@ -412,3 +412,15 @@ https://blog.angular-university.io/angular-host-context/
 - can add `pure: false` to decorator
 - decreased performance
 - `mutated input will also trigger the pipe`
+
+# i18n
+
+- 18 chars between i&n
+- `add i18n attribute` for i18n
+- `ng xi18n` to `extract the messages.xlf file`
+- `<h1 i18n="meaning_of_the_message | description_of_message @@custom_unique_id> MESSAGE <h1>`
+- `unique id will always gets changed when MEANING and MESSAGE gets changed`
+
+## Pluralization
+
+`<div i18n> { coursesTotal, plural, =0 {No Course present}, =1 {One Course is present}, other { total {{ courseTotal}} course are present }} <div>`
