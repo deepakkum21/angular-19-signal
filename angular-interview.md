@@ -339,6 +339,9 @@ https://angular.dev/guide/templates/defer
 -           @defer {
                     // code which can be loaded on demand
             }
+- `by default @defer === @defer(on idle; prefetch on idle)`
+  - i.e. prefetching of data is triggered when browser is idle
+  - and then when browser is idle then the @defer block is triggered but both are different triggers
 
 ## 1. @Placeholder
 
@@ -366,9 +369,6 @@ https://angular.dev/guide/templates/defer
         } @placeholder {
             <p>Placeholder content</p>
         }
-- `by default @defer === @defer(on idle; prefetch on idle)`
-  - i.e. when browser is idle then the @defer block is triggered
-  - and then prefetching of data is also triggered when browser is idle but both are different triggers
 
 ## 3. @error
 
@@ -380,6 +380,144 @@ https://angular.dev/guide/templates/defer
 
                 <p>Failed to load large component.</p>
             }
+            - on specifies a condition for when the @defer block is triggered.
+
+# Controlling deferred content loading with triggers
+
+- When a @defer block is triggered, it replaces placeholder content with lazily loaded content.
+- `Multiple event triggers can be defined by separating them with a semicolon, ; and will be evaluated as OR conditions`.
+- There are two types of triggers:
+  - `on`
+  - `when`
+
+## A. `on` trigger
+
+- on `specifies a condition` for when the @defer block is triggered.
+  | Trigger | Description |
+  | ------- | ----------- |
+  |`idle` |Triggers when the `browser is idle`. `Default` for @defer when not specified any trigger|
+  |`viewport` |Triggers when `specified content enters the viewport`|
+  |`interaction`| Triggers when the `user interacts with specified element`|
+  |`hover` |Triggers when the `mouse hovers over specified area`|
+  |`immediate`| Triggers `immediately after non-deferred content has finished rendering`|
+  |`timer` |Triggers `after a specific duration`|
+
+### 1. idle
+
+- The idle trigger loads the deferred content `once the browser has reached an idle state`, based on `requestIdleCallback`.
+- This is the `default behavior with a defer block`.
+
+        <!-- @defer (on idle) -->
+        @defer {
+            <large-cmp />
+        } @placeholder {
+            <div>Large component placeholder</div>
+        }
+
+        <!-- @defer (on idle) --> both are same
+        @defer (on idle) {
+            <large-cmp />
+        } @placeholder {
+            <div>Large component placeholder</div>
+        }
+
+### 2. viewport
+
+- The viewport trigger` loads the deferred content when the specified content enters the viewport` using the `Intersection Observer API`
+
+        @defer (on viewport) {
+            <large-cmp />
+        } @placeholder {
+            <div>Large component placeholder</div>
+        }
+
+        <div #greeting>Hello!</div>    // greeting element in watched to enter the viewport
+        @defer (on viewport(greeting)) {
+            <greetings-cmp />
+        }
+
+### 3. interaction
+
+- The interaction trigger `loads the deferred content when the user interacts with the specified element through click or keydown events`.
+- `By default, the placeholder acts as the interaction element`. Placeholders used this way must have a single root element.
+
+        @defer (on interaction) {
+            <large-cmp />
+        } @placeholder {
+            <div>Large component placeholder</div>
+        }
+
+- we can `specify a template reference variable in the same template as the @defer block as the element that is watched to enter the viewport` . This variable is passed in as a parameter on the viewport trigger.
+
+        <div #greeting>Hello!</div>
+        @defer (on interaction(greeting)) {
+            <greetings-cmp />
+        }
+
+### 4. hover
+
+- The hover `trigger loads the deferred content when the mouse has hovered over the triggered area through` the mouseover and focusin events.
+- By `default, the placeholder acts as the interaction element`. Placeholders used this way must have a single root element.
+
+        @defer (on hover) {
+          <large-cmp />
+        } @placeholder {
+          <div>Large component placeholder</div>
+        }
+
+- Alternatively, we can `specify a template reference variable in the same template as the @defer block as the element that is watched to enter the viewport`. This variable is passed in as a parameter on the viewport trigger
+
+        <div #greeting>Hello!</div>
+        @defer (on hover(greeting)) {
+          <greetings-cmp />
+        }
+
+### 5. immediate
+
+- The immediate trigger `loads the deferred content immediately`.
+- This means that the `deferred block loads as soon as all other non-deferred content has finished rendering
+
+        @defer (on immediate) {
+          <large-cmp />
+        } @placeholder {
+          <div>Large component placeholder</div>
+        }`
+
+### 6. timer
+
+- The timer `trigger loads the deferred content after a specified duration.`
+- The duration parameter must be specified in milliseconds (ms) or seconds (s).
+
+        @defer (on timer(500ms)) {
+          <large-cmp />
+        } @placeholder {
+          <div>Large component placeholder</div>
+        }
+
+## B. when [custom trigger]
+
+- The when trigger `accepts a custom conditional expression` and loads the deferred content when the condition becomes truthy.
+- This is a `one-time operation` the `@defer block does not revert back to the placeholder if the condition changes to a falsy value after becoming truthy`.
+
+        @defer (when condition) {
+          <large-cmp />
+        } @placeholder {
+          <div>Large component placeholder</div>
+        }
+
+## prefetch [Prefetching data with prefetch]
+
+- This trigger lets you `load the JavaScript associated with the @defer block before the deferred content is shown`.
+- Prefetching enables more advanced behaviors, `such as letting you start to prefetch resources before a user has actually seen or interacted with a defer block, but might interact with it soon, making the resources available faster.`
+- You can specify a `prefetch trigger similarly to the block's main trigger`, but `prefixed with the prefetch keyword`.
+- The `block's main trigger and prefetch trigger are separated with a semi-colon character (;)`.
+- one can have custom `when trigger` also
+
+        @defer (on interaction; prefetch on idle) {
+          <large-cmp />
+        } @placeholder {
+          <div>Large component placeholder</div>
+        }
 
 # Life Cycle Hooks
 
