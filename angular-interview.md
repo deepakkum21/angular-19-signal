@@ -144,8 +144,11 @@ https://blog.angular-university.io/angular-host-context/
 
 ## template && ngTemplateOutlet
 
-1.  templates ng-template can be passed as input to child component
-2.  here blankImage template is passed to course-card as input
+1.  `directive used to render an Angular template dynamically.`
+2.  It allows you to `insert the content of a template into your view at runtime`, providing flexibility in how the content is structured and displayed.
+
+3.  templates ng-template can be passed as input to child component
+4.  here blankImage template is passed to course-card as input
 
         // parent
         <ng-template #blankImage let-courseName="description">
@@ -169,8 +172,95 @@ https://blog.angular-university.io/angular-host-context/
 
         whatever object is passed as part of context in *ngTemplateOutlet is sent to ngTemplate declared in parent
 
-3.  ng-template used for
+5.  ng-template used for
     - reuse a particular block of html either from parent or same template
+
+# ngComponentOutlet [Dynamic component loading]
+
+- directive is a powerful feature `that allows you to dynamically render a component at runtime. `
+- This directive is part of the CommonModule, and it lets you `specify which component should be displayed inside a container based on certain conditions or data at runtime, rather than at compile-time.`
+
+        // Component A
+        @Component({
+            selector: 'app-component-a',
+            template: `<h2>This is Component A</h2>`
+        })
+        export class ComponentA {}
+
+        // ComponentB
+        @Component({
+            selector: 'app-component-b',
+            template: `<h2>This is Component B</h2>`
+        })
+        export class ComponentB {}
+
+        // Parent With ngComponentOutlet
+        @Component({
+        selector: 'app-parent',
+        template: `
+            <h1>Dynamic Component Rendering</h1>
+            <ng-container *ngComponentOutlet="outletComponent"></ng-container>
+            <button (click)="toggleComponent()">Toggle Component</button>
+        `
+        })
+        export class ParentComponent implements OnInit {
+            outletComponent: any;
+
+            constructor() {}
+
+            ngOnInit() {
+                // Initially load ComponentA
+                this.outletComponent = ComponentA;
+            }
+
+            toggleComponent() {
+                // Toggle between ComponentA and ComponentB
+                this.outletComponent = this.outletComponent === ComponentA ? ComponentB : ComponentA;
+            }
+        }
+
+- `Passing Data to Dynamically Loaded Components`
+
+        // Child
+        @Component({
+            selector: 'app-dynamic-child',
+            template: `<h2>Received Data: {{data}}</h2>`
+        })
+        export class DynamicChildComponent {
+            @Input() data: string = '';
+        }
+
+        // Parent
+        @Component({
+        selector: 'app-parent',
+        template: `
+            <h1>Dynamic Component with Input</h1>
+            <ng-container *ngComponentOutlet="outletComponent; injector: dynamicComponentInjector"></ng-container>
+            <button (click)="toggleComponent()">Toggle Component</button>
+        `
+        })
+        export class ParentComponent {
+            outletComponent = DynamicChildComponent;
+
+            dynamicComponentInjector = this.createInjector();
+
+            toggleComponent() {
+                // Toggle logic if necessary
+            }
+
+            // Creating an injector to pass data to the dynamically created component
+            private createInjector() {
+                const injector = Injector.create({
+                providers: [
+                    {
+                    provide: 'data',
+                    useValue: 'Hello from Parent Component!',
+                    }
+                ]
+                });
+                return injector;
+            }
+        }
 
 ## Angular DI
 
@@ -264,17 +354,24 @@ https://blog.angular-university.io/angular-host-context/
 
 ## Other DI Decorators
 
-1. @Optional()
-   - will mark the service as optional and `will not break the app while bootstrap phase`, will break when it in being invoked
-2. @Self()
-   - when we `don't want the parent or global instance of service and want a private instance of service`
-   - but we need to provide providers: [ serviceName] in that component
-3. @SkipSelf()
-   - if we want `to skip the component provider Service but want parent provided Service`
-   - Parent should have the Service provided
-4. @Host()
-   - if we `want to have to host provided Service Dependency and not global or parent`
-   - generally used in case of directive, where directive binded Host Dependency needed
+### 1. @Optional()
+
+- will mark the service as optional and `will not break the app while bootstrap phase`, will break when it in being invoked
+
+### 2. @Self()
+
+- when we `don't want the parent or global instance of service and want a private instance of service`
+- but we need to provide providers: [ serviceName] in that component
+
+### 3. @SkipSelf()
+
+- if we want `to skip the component provider Service but want parent provided Service`
+- Parent should have the Service provided
+
+### 4. @Host()
+
+- if we `want to have to host provided Service Dependency and not global or parent`
+- generally used in case of directive, where directive binded Host Dependency needed
 
 # Change Detection
 
@@ -569,9 +666,20 @@ https://angular.dev/guide/templates/defer
 - cannot and should modify data which are being used in the component view, angular will not now about this
 - useful to apply scrolling , setting focus after adding elements to list, anything which doesn't affect the view
 
-## 9. ngAfterNexRender
+## 9. afterRender
 
-## 10. ngDestroy
+- allows you to `register a callback that executes after every render cycle.`
+- Dynamic Content Sizing
+
+## 10. afterNextRender
+
+- `registers a callback that executes ONLY ONCE after the next render cycle, when the DOM is loaded.`
+- uses case
+  - Initializing Third-Party Libraries,
+  - Detaching Temporary Elements
+  - setting Up Element Observers
+
+## 11. ngDestroy
 
 - called only once when component is destroyed
 - used to cleanup activity
