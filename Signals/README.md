@@ -52,7 +52,8 @@
 2.  These are derived signal from other signal.
 3.  When a signal updates, all its dependent/derived signals will then get updated automatically
 4.  should always return values
-5.  To have computed signal just need to invoke atleast one signal in the body to initialize the computed signal as a signal always needs a initial value
+5.  `should not update any signal in compute()`
+6.  To have computed signal just need to invoke atleast one signal in the body to initialize the computed signal as a signal always needs a initial value
 
         counter = signal(0);
 
@@ -133,13 +134,14 @@ Ansss=> _yes using untracked_
 ## Detecting signal changes with the effect() API
 
 1.  computed() API, gives us way to know when a dependent Signal has changed, and resulting in calculating new value for derived Signal.
-2.  But what if instead of calculating the new value of a dependent signal, we just want to detect that a value has changed for some other reason?
-3.  a situation where you need to detect that the value of a signal (or a set of signals) has changed to perform some sort of side effect, that does not modify other signals
-4.  in effect() there should be invoking of Signal (not in condition/setTimeout), because of this effect() runs atleast once.
-5.  Best place to define effect is in constructor,
+2.  `should not update any signal in effect()`
+3.  But what if instead of calculating the new value of a dependent signal, we just want to detect that a value has changed for some other reason?
+4.  a situation where you need to detect that the value of a signal (or a set of signals) has changed to perform some sort of side effect, that does not modify other signals
+5.  in effect() there should be invoking of Signal (not in condition/setTimeout), because of this effect() runs atleast once.
+6.  Best place to define effect is in constructor,
     why?
     - To know the dependency Injection Context, so that while discarding the component on ngDestroy the effect also gets destroy to avoid memory leak
-6.  Defining DI context manually (for GC) when effect() defined other than constructor
+7.  Defining DI context manually (for GC) when effect() defined other than constructor
 
     - Inject the Injector context using inject(Injector) same as constructor(injector: Injector)
 
@@ -153,9 +155,9 @@ Ansss=> _yes using untracked_
                  })
              }
 
-7.  Just like in the case of the computed() API, the signal dependencies of an effect are determined dynamically based on the last call to the effect function.
+8.  Just like in the case of the computed() API, the signal dependencies of an effect are determined dynamically based on the last call to the effect function.
     - if no signal invocation is done in any of the effect() call, the the signal dependency gets broken.
-8.  UseCase
+9.  UseCase
     - logging the value of a number of signals using a logging library
     - exporting the value of a signal to localStorage or a cookie [saving form data]
     - saving the value of a signal transparently to the database in the background
@@ -304,9 +306,9 @@ But sometimes, we might want the input property to have a different name
 
 1.  The output() API is a direct replacement for the traditional @Output() decorator.
 2.  The output function returns an OutputEmitterRef
-3.                                                     deleteBook = output<Book>()
+3.                                                        deleteBook = output<Book>()
 4.  The `<Book>` generic type in output`<Book>()` indicates that this output will only emit values of type Book
-5.                                                                                                // Child component
+5.                                                                                                   // Child component
 
         deleteBook = output<Book>();
 
@@ -642,7 +644,7 @@ Ans => `viewChild will pick the first occurrence of the title variable`, and no 
 1.  `it won't work`
 2.  This is because the `viewChild() signal query only works for elements that are direct children of the component`, meaning elements of it's own template.
 3.  viewChild() will simply `not work for elements that are projected into the component via ng-content`.
-4.                                           feature = contentChild("feature");
+4.                                              feature = contentChild("feature");
 5.  we `didn't have to use the AfterContentInit lifecycle hook`, like we used to do with the @ContentChild decorator.
 6.  AfterContentInit work can be achieved by => `effect()`
 
