@@ -716,6 +716,76 @@ https://angular.dev/guide/templates/defer
 - decreased performance
 - `mutated input will also trigger the pipe`
 
+# Ways to unsubscribe Observable
+
+## 1. async pipe
+
+- async pipe automatically takes care of unsubscribing for that observable
+- can use the async pipe to subscribe to observables directly in the template. `Angular automatically manages the subscription and unsubscribes when the component is destroyed.`
+
+            <test-component> {{ testObservable$ | async}}
+
+            testObservable$ = someService.getNames()
+
+## 2. takeUntil
+
+        private destroy$ = new Subject<void>();
+
+        observable$
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(data => console.log(data));
+
+        ngOnDestroy() {
+            this.destroy$.next();
+            this.destroy$.complete();
+        }
+
+## 3. take(1) [if certain only 1 value will be emitted]
+
+        observable.pipe(take(1)).subscribe(
+            value => console.log(value),
+            error => console.error(error),
+            () => console.log('Completed')
+        );
+
+## 4. takeUntilDestroyed(destroyRef?: DestroyRef)
+
+- When using `inside current injection context`
+
+            constructor(private service: DataService) {
+                this.service.getData()
+                .pipe(takeUntilDestroyed())
+                .subscribe(response => this.data = response)
+            }
+
+- When using `outside current injection context`
+
+            destroyRef = inject(DestroyRef)
+
+            constructor(private service: DataService) {}
+
+            ngAfterViewInit() {
+                this.service.getData()
+                .pipe(takeUntilDestroyed(this.destroyRef))
+                .subscribe(response => this.data = response)
+            }
+
+## 5. Manual unsubscribe
+
+            allSubscriptions: Subscriptions[] = [];
+            mySubscription: Subscription;
+
+            myMethod() {
+                mySubscription = this.myCustomService.getData().subscribe();
+                this.allSubscriptions.push(this.mySubscription)
+            }
+
+            ngOnDestroy(){
+                this.allSubscriptions.forEach((sub: Subscription) => {
+                    sub.unsubscribe();
+                })
+            }
+
 # i18n
 
 - 18 chars between i&n
