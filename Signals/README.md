@@ -34,7 +34,7 @@
 
 1. By Default signals are writable
    `age = Signal(10)`
-2. Signal must be initailized
+2. `Signal must be initailized`
 3. to access value just call the signal variable as a function i.e invoke
    - `age() // to read value`
 4. To set /update
@@ -54,7 +54,7 @@
 4.  should always return values
 5.  `should not update any signal in compute()`
 6.  To have computed signal just need to invoke atleast one signal in the body to initialize the computed signal as a signal always needs a initial value
-
+```ts
         counter = signal(0);
 
         derivedCounter = computed(() => {
@@ -64,7 +64,7 @@
         tenXCounter = computed(() => {
             return this.derivedCounter() \* 10;
         })
-
+```
 ### QQQQ => Can we read the value of a signal from a computed signal without creating a dependency i.e. when the source signal gets updated it should not trigger computed signal to be invoked?
 
 Ansss=> _yes using untracked_
