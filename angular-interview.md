@@ -86,7 +86,7 @@ https://blog.angular-university.io/angular-host-context/
 
 1.  selector allows you to `target the component’s root element` (the element in the DOM that corresponds to the component).
 2.  This can be useful when `you need to apply styles to the wrapper or container element of the component`.
-```ts
+```html
             <!-- my-component.component.html -->
             <div>
                 <p>Content inside the component</p>
