@@ -86,7 +86,7 @@ https://blog.angular-university.io/angular-host-context/
 
 1.  selector allows you to `target the component’s root element` (the element in the DOM that corresponds to the component).
 2.  This can be useful when `you need to apply styles to the wrapper or container element of the component`.
-
+```html
             <!-- my-component.component.html -->
             <div>
                 <p>Content inside the component</p>
@@ -99,7 +99,7 @@ https://blog.angular-university.io/angular-host-context/
                 padding: 10px;
                 background-color: #f0f0f0;
             }
-
+```
 3.  Explanation:- in above ex Here, :host applies styles to the root `<app-my-component> `element in the DOM. This means the component will be displayed as a block, with padding and a background color, affecting the root wrapper element.
 
 ## ::ng-deep or /deep/ or >>> [Deprecated]
