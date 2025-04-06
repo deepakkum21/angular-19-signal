@@ -132,3 +132,11 @@ export const appConfig: ApplicationConfig = {
   providers: [provideStore()],
 };
 ```
+
+---
+
+## NGRX
+
+https://ngrx.io/guide/store
+
+![ngrx](./img/ngrx.png)
