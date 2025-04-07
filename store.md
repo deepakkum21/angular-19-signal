@@ -27,11 +27,22 @@
 
 ## NGXS
 
+- state management pattern + library for Angular
+- `modeled after the CQRS pattern popularly implemented in libraries like Redux and NgRx` but reduces boilerplate by using modern TypeScript features such as classes and decorators
+  https://www.ngxs.io/
+
 1. `@Store`
 2. `@Action`
 3. `@Selector`
 
-https://www.ngxs.io/
+- place where some transformation can be done
+
+```ts
+  @Selector()
+  static getCounter(state: CounterStateModel): number {
+    return state.counter;
+  }
+```
 
 ```ts
 // counter.state.ts
@@ -107,10 +118,10 @@ export class CounterState {
 ```ts
 export class AppComponent {
   // Select the count from the store
-  count$: Observable<number> = this.store.select(CounterStateModel.getCounter); // return Observable
+  count$: Observable<number> = this.store.select(CounterState.getCounter); // return Observable
 
   countSignal: Signal<number> = this.store.selectSignal(
-    CounterStateModel.getCounter
+    CounterState.getCounter
   ); // return Signal
 
   constructor(private store: Store) {}
