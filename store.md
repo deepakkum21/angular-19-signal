@@ -151,3 +151,126 @@ export const appConfig: ApplicationConfig = {
 https://ngrx.io/guide/store
 
 ![ngrx](./img/ngrx.png)
+
+### Action
+
+```ts
+export const increment = createAction(
+  '[Counter] Increment',
+  props<{ value: number }>()
+);
+
+export const decrement = createAction(
+  '[Counter] Decrement',
+  props<{ value: number }>()
+);
+
+// old way
+// export const INCREMENT = '[Counter] Increment'
+
+// export class IncrementAction implements Action {
+//   readonly type = INCREMENT;
+//   constructor(public value: number) {}
+// }
+
+// export class DecrementAction implements Action {
+//   readonly type = DECREMENT;
+//   constructor(public value: number) {}
+// }
+
+// export type CounterActions = IncrementAction | DecrementAction;
+```
+
+### Reducer
+
+```ts
+import { Action, createReducer, on } from '@ngrx/store';
+
+// import { CounterActions, INCREMENT, IncrementAction } from './counter.actions';
+import { decrement, increment } from './counter.actions';
+
+const initialState = 0;
+
+export const counterReducer = createReducer(
+  initialState,
+  on(increment, (state, action) => state + action.value),
+  on(decrement, (state, action) => state - action.value)
+);
+
+// old way
+// export function counterReducer(state = initialState, action: CounterActions | Action) {
+//   if (action.type === INCREMENT) {
+//     return state + (action as IncrementAction).value;
+//   }
+//   if (action.type === DECREMENT) {
+//     return state - (action as DecrementAction).value;
+//   }
+//   return state;
+// }
+```
+
+### Selector [transformation]
+
+```ts
+import { createSelector } from '@ngrx/store';
+
+export const selectCount = (state: { counter: number }) => state.counter;
+
+export const selectDoubleCount = createSelector(
+  selectCount,
+  (state) => state * 2
+);
+```
+
+### Dispatch
+
+```ts
+export class CounterControlsComponent {
+  constructor(private store: Store) {}
+
+  increment() {
+    this.store.dispatch(increment({ value: 2 }));
+  }
+
+  decrement() {
+    this.store.dispatch(decrement({ value: 2 }));
+  }
+
+  //old way
+  // increment() {
+  //   this.store.dispatch(new IncrementAction({ value: 2 }));
+  // }
+
+  // decrement() {
+  //   this.store.dispatch(new DecrementAction({ value: 2 }));
+  // }
+}
+```
+
+### Select [get Value]
+
+```ts
+export class CounterOutputComponent {
+  count$: Observable<number>;
+  doubleCount$: Observable<number>;
+
+  constructor(private store: Store<{ counter: number }>) {
+    // for specific select [slice]
+    this.count$ = store.select(selectCount);
+    this.doubleCount$ = store.select(selectDoubleCount);
+
+    // for whole reducer
+
+    store.select('counter'); // `counter` is a key for reducer defined app.module
+  }
+}
+```
+
+### imports for Modules based
+
+```ts
+imports: [BrowserModule, StoreModule.forRoot({
+    counter: counterReducer,
+    // auth: authReducer
+  })],
+```
