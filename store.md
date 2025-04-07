@@ -281,4 +281,61 @@ imports: [BrowserModule, StoreModule.forRoot({
 providers: [provideStore({ counter: counterReducer })];
 ```
 
-###
+### Effects
+
+- logging
+- http call
+- localstorage
+- these should not be the part of reducers [reducer should be sync calls]
+
+```ts
+providers: [provideStore({ counter: counterReducer }), provideEffects()];
+```
+
+```ts
+imports: [
+  BrowserModule, StoreModule.forRoot({
+    counter: counterReducer,
+    // auth: authReducer
+  }),
+  EffectsModule.forRoot([])
+  ],
+```
+
+```ts
+import { Actions, createEffect, ofType } from '@ngrx/effects';
+
+@Injectable()
+export class CounterEffects {
+  loadCount = createEffect(() =>
+    this.actions$.pipe(
+      ofType(init),
+      switchMap(() => {
+        const storedCounter = localStorage.getItem('count');
+        if (storedCounter) {
+          return of(set({ value: +storedCounter }));
+        }
+        return of(set({ value: 0 })); //return action
+      })
+    )
+  );
+
+  saveCount = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(increment, decrement),
+        withLatestFrom(this.store.select(selectCount)),
+        tap(([action, counter]) => {
+          console.log(action);
+          localStorage.setItem('count', counter.toString());
+        })
+      ),
+    { dispatch: false } // so that no further actions are triggered
+  );
+
+  constructor(
+    private actions$: Actions,
+    private store: Store<{ counter: number }>
+  ) {}
+}
+```
