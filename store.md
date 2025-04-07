@@ -274,3 +274,11 @@ imports: [BrowserModule, StoreModule.forRoot({
     // auth: authReducer
   })],
 ```
+
+### imports for Standalone
+
+```ts
+providers: [provideStore({ counter: counterReducer })];
+```
+
+###
