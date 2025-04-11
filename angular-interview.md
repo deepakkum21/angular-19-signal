@@ -86,20 +86,17 @@ https://blog.angular-university.io/angular-host-context/
 
 1.  selector allows you to `target the component’s root element` (the element in the DOM that corresponds to the component).
 2.  This can be useful when `you need to apply styles to the wrapper or container element of the component`.
-```html
-            <!-- my-component.component.html -->
-            <div>
-                <p>Content inside the component</p>
-            </div>
 
-            /* my-component.component.css */
-            :host {
-                display: block;
-                border: 2px solid #000;
-                padding: 10px;
-                background-color: #f0f0f0;
-            }
+```html
+<!-- my-component.component.html -->
+<div>
+  <p>Content inside the component</p>
+</div>
+
+/* my-component.component.css */ :host { display: block; border: 2px solid #000;
+padding: 10px; background-color: #f0f0f0; }
 ```
+
 3.  Explanation:- in above ex Here, :host applies styles to the root `<app-my-component> `element in the DOM. This means the component will be displayed as a block, with padding and a background color, affecting the root wrapper element.
 
 ## ::ng-deep or /deep/ or >>> [Deprecated]
@@ -110,18 +107,16 @@ https://blog.angular-university.io/angular-host-context/
 4.  ::ng-deep is `deprecated` in Angular and will eventually be removed. However, it’s still widely used as a workaround until a proper solution is provided (`usually with the new Shadow DOM approach`).
 5.  skip addition of any [ngcontent-c0] like angular class, because it breaks angular view encapsulation
 
-        <!-- parent.component.html -->
-        <app-child></app-child>
+```html
+<!-- parent.component.html -->
+<app-child></app-child>
 
-        <!-- child.component.html -->
-        <p>This is the child component</p>
+<!-- child.component.html -->
+<p>This is the child component</p>
 
-
-        /* parent.component.css */
-        ::ng-deep app-child p {
-            color: red;
-            font-size: 20px;
-        }
+/* parent.component.css */ ::ng-deep app-child p { color: red; font-size: 20px;
+}
+```
 
 6.  Explanation: The ::ng-deep selector allows you to target the `<p>` element inside the `<app-child>` component from the parent component’s styles. Without ::ng-deep, Angular's view encapsulation would prevent the parent from styling the child component directly.
 
@@ -130,17 +125,15 @@ https://blog.angular-university.io/angular-host-context/
 1.  structural directive are `internally converted to ng-template code`
 2.  eg
 
-        <component *ngIf="book[0] as book">
-            // other html
-        </component>
+```html
+<component *ngIf="book[0] as book"> // other html </component>
 
-        will be converted to
+will be converted to
 
-        <ng-template [ngIf]="books" let-book>
-            <component >
-                // other html
-            </component>
-        </ng-template>
+<ng-template [ngIf]="books" let-book>
+  <component> // other html </component>
+</ng-template>
+```
 
 ## template && ngTemplateOutlet
 
@@ -150,27 +143,33 @@ https://blog.angular-university.io/angular-host-context/
 3.  templates ng-template can be passed as input to child component
 4.  here blankImage template is passed to course-card as input
 
-        // parent
-        <ng-template #blankImage let-courseName="description">
-            <p class="warn">{{courseName}} has no image yet.</p>
-            <img src="/assets/empty-image.png">
-        </ng-template>
+```html
+// parent
+<ng-template #blankImage let-courseName="description">
+  <p class="warn">{{courseName}} has no image yet.</p>
+  <img src="/assets/empty-image.png" />
+</ng-template>
 
-        <course-card
-                (courseSelected)="onCourseSelected($event)"
-                    [course]="course" [noImageTpl]="blankImage">
-            <course-image [src]="course.iconUrl"></course-image>
-            <div class="course-description">
-                {{ course.longDescription }}
-            </div>
-        </course-card>
+<course-card
+  (courseSelected)="onCourseSelected($event)"
+  [course]="course"
+  [noImageTpl]="blankImage"
+>
+  <course-image [src]="course.iconUrl"></course-image>
+  <div class="course-description">{{ course.longDescription }}</div>
+</course-card>
 
-        // child
-        @Input() noImageTpl: TemplateRef<any>;
+// child @Input() noImageTpl: TemplateRef<any
+  >;
 
-        <ng-container  *ngTemplateOutlet="noImageTpl;context: {description:course.description}" />
+  <ng-container
+    *ngTemplateOutlet="noImageTpl;context: {description:course.description}"
+  />
 
-        whatever object is passed as part of context in *ngTemplateOutlet is sent to ngTemplate declared in parent
+  whatever object is passed as part of context in *ngTemplateOutlet is sent to
+  ngTemplate declared in parent</any
+>
+```
 
 5.  ng-template used for
     - reuse a particular block of html either from parent or same template
