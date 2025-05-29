@@ -1,5 +1,6 @@
 # Lazy Loading [standalone]
 
+ ```ts
         // app.routes.ts
         {
             path: 'routePath',
@@ -21,6 +22,7 @@
                 ]
             }
         ]
+```
 
 # Preloading Strategies
 
