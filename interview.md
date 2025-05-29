@@ -1,3 +1,5 @@
+
+```js
         // console.log("aaaa")
         // for(var a=1; a<4;a++) {
         // setTimeout(console.log(a),0)
@@ -20,3 +22,4 @@
 
         // const obj = {a:1,b:2,c:3}
         // console.log(...obj) // Spread syntax requires ...iterable[Symbol.iterator] to be a function
+```
