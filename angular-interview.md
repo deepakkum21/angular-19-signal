@@ -159,8 +159,8 @@ will be converted to
   <div class="course-description">{{ course.longDescription }}</div>
 </course-card>
 
-// child @Input() noImageTpl: TemplateRef<any
-  >;
+// child
+@Input() noImageTpl: TemplateRef<any>;
 
   <ng-container
     *ngTemplateOutlet="noImageTpl;context: {description:course.description}"
